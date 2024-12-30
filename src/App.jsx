@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const meals = [
   { id: 1, name: 'Spaghetti & Meatballs', image: '/images/spaghetti.jpg', time: '30 min' },
@@ -114,6 +115,7 @@ const App = () => {
           ))}
         </div>
       )}
+      <SpeedInsights />
     </div>
   );
 };
