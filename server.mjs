@@ -1,19 +1,23 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import twilio from 'twilio';
+import dotenv from 'dotenv';
 
-// Hardcoded Twilio credentials and phone numbers
-const accountSid = 'AC93cd45e711eee106b0d1df996fb931bd'; // Twilio Account SID
-const authToken = '8bc9e25f65115fd2fb06a5016ad436cd'; // Twilio Auth Token
-const twilioPhoneNumber = '+12535233196'; // Your Twilio phone number
-const preparerPhoneNumber = '+491741992215'; // Preparer's phone number
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Twilio Client
+// Twilio credentials and phone numbers from environment variables
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const preparerPhoneNumber = process.env.PREPARER_PHONE_NUMBER;
+
+// Twilio client
+import twilio from 'twilio';
 const client = twilio(accountSid, authToken);
 
 // Endpoint to handle SMS sending
@@ -23,7 +27,7 @@ app.post('/send-sms', (req, res) => {
   // Construct the SMS message
   const message = `New Order Received:\n- Meal: ${mealName}\n- Preparation Time: ${mealTime}`;
 
-  // Send the SMS
+  // Send the SMS using Twilio
   client.messages
     .create({
       from: twilioPhoneNumber,
@@ -42,4 +46,6 @@ app.post('/send-sms', (req, res) => {
 
 // Start the server
 const PORT = 3001;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
