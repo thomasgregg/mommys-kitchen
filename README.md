@@ -2,6 +2,9 @@
 
 Mommy's Kitchen is a React-based web application that allows users to order meals from a predefined menu. Upon confirmation of an order, the app sends an SMS notification to the preparer with the details of the selected meal and preparation time. The app is designed to be simple, responsive, and fully functional on both desktop and mobile devices.
 
+<img width="568" alt="image" src="https://github.com/user-attachments/assets/448e1fb4-ac06-4f6a-b9ca-ea5c530006cd" />
+
+
 ---
 
 ## Features
