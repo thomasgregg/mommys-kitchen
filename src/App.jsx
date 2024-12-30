@@ -61,7 +61,14 @@ const App = () => {
   return (
     <div className="max-w-lg mx-auto p-4">
       <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-purple-600">Mommy's Kitchen</h1>
+        <div className="flex items-center justify-center mb-2">
+          <img 
+            src="/icons/web-app-manifest-512x512.png" 
+            alt="Mommy's Kitchen Icon" 
+            className="w-12 h-12 mr-2"
+          />
+          <h1 className="text-3xl font-bold text-purple-600">Mommy's Kitchen</h1>
+        </div>
         <p className="text-gray-600">What would you like to eat?</p>
       </header>
 
