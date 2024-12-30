@@ -2,27 +2,28 @@ import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
 
 const meals = [
-  { id: 1, name: 'Spaghetti & Meatballs', image: '/images/spaghetti.jpg', time: '30 min' },
-  { id: 2, name: 'Mac & Cheese', image: '/images/maccheese.jpg', time: '20 min' },
-  { id: 3, name: 'Chicken Nuggets', image: '/images/chickennuggets.jpg', time: '25 min' },
-  { id: 4, name: 'Pizza', image: '/images/pizza.jpg', time: '15 min' }
+  { id: 1, name: 'Spaghetti & Meatballs', image: 'images/spaghetti.jpg', time: '30 min' },
+  { id: 2, name: 'Mac & Cheese', image: 'images/maccheese.jpg', time: '20 min' },
+  { id: 3, name: 'Chicken Nuggets', image: 'images/chickennuggets.jpg', time: '25 min' },
+  { id: 4, name: 'Pizza', image: 'images/pizza.jpg', time: '15 min' }
 ];
 
 const App = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const [confirmationStep, setConfirmationStep] = useState(false);
   const [ordered, setOrdered] = useState(false);
 
   // Function to send SMS via the backend
   const sendSms = async (meal) => {
     try {
       const response = await fetch('https://mommys-kitchen.vercel.app/api/send-sms', {
-        method: 'POST', // Ensures the correct HTTP method
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Inform the server we're sending JSON
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mealName: meal.name, // Include the name of the meal
-          mealTime: meal.time, // Include the preparation time
+          mealName: meal.name,
+          mealTime: meal.time,
         }),
       });
 
@@ -36,14 +37,24 @@ const App = () => {
     }
   };
 
-  // Function to handle meal selection
-  const handleOrder = async (meal) => {
+  // Handle meal selection
+  const handleMealSelection = (meal) => {
     setSelectedMeal(meal);
-    setOrdered(true);
-    console.log(`Ordered: ${meal.name}`);
+    setConfirmationStep(true); // Show the confirmation dialog
+  };
 
-    // Trigger SMS notification
-    await sendSms(meal);
+  // Confirm the order
+  const confirmOrder = async () => {
+    setOrdered(true);
+    setConfirmationStep(false); // Exit confirmation step
+    console.log(`Order confirmed for: ${selectedMeal.name}`);
+    await sendSms(selectedMeal); // Send SMS after confirmation
+  };
+
+  // Cancel the order
+  const cancelOrder = () => {
+    setSelectedMeal(null);
+    setConfirmationStep(false); // Reset to allow another selection
   };
 
   return (
@@ -65,12 +76,31 @@ const App = () => {
             Order Something Else
           </button>
         </div>
+      ) : confirmationStep ? (
+        <div className="text-center p-6 bg-yellow-100 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">Confirm Your Order</h2>
+          <p>Are you sure you want to order {selectedMeal.name}?</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <button
+              onClick={confirmOrder}
+              className="bg-green-600 text-white px-6 py-2 rounded-full"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={cancelOrder}
+              className="bg-red-600 text-white px-6 py-2 rounded-full"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {meals.map((meal) => (
             <button
               key={meal.id}
-              onClick={() => handleOrder(meal)}
+              onClick={() => handleMealSelection(meal)}
               className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
             >
               <img
