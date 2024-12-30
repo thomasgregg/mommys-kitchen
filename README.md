@@ -118,14 +118,6 @@ const message = `New Order Received:\n- Meal: ${mealName}\n- Preparation Time: $
 
 ---
 
-## Future Improvements
-
-- Add user authentication for personalized orders.
-- Allow dynamic input of the preparer's phone number.
-- Include an order history feature.
-
----
-
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT). Feel free to use, modify, and distribute as needed.
