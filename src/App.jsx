@@ -61,13 +61,13 @@ const App = () => {
   return (
     <div className="max-w-lg mx-auto p-4">
       <header className="text-center mb-8">
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-center justify-center mb-1">
           <img 
             src="/icons/web-app-manifest-512x512.png" 
             alt="Mommy's Kitchen Icon" 
             className="w-12 h-12 mr-2"
           />
-          <h1 className="text-3xl font-bold text-purple-600">Mommy's Kitchen</h1>
+          <h1 className="text-3xl font-bold text-fuchsia-600">Mommy's Kitchen</h1>
         </div>
         <p className="text-gray-600">What would you like to eat?</p>
       </header>
@@ -79,7 +79,7 @@ const App = () => {
           <p>Mom will prepare {selectedMeal.name} for you.</p>
           <button
             onClick={() => setOrdered(false)}
-            className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-full"
+            className="mt-4 bg-fuchsia-600 text-white px-6 py-2 rounded-full"
           >
             Order Something Else
           </button>
