@@ -12,19 +12,17 @@ const App = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [ordered, setOrdered] = useState(false);
 
-  // Function to send SMS via backend
+  // Function to send SMS via the backend
   const sendSms = async (meal) => {
-    console.log('Sending SMS for:', meal); // Debug log
-
     try {
-      const response = await fetch('http://localhost:3001/send-sms', {
-        method: 'POST',
+      const response = await fetch('https://mommys-kitchen.vercel.app/api/send-sms', {
+        method: 'POST', // Ensures the correct HTTP method
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', // Inform the server we're sending JSON
         },
         body: JSON.stringify({
-          mealName: meal.name,
-          mealTime: meal.time,
+          mealName: meal.name, // Include the name of the meal
+          mealTime: meal.time, // Include the preparation time
         }),
       });
 
@@ -38,11 +36,11 @@ const App = () => {
     }
   };
 
-  // Handle user ordering a meal
+  // Function to handle meal selection
   const handleOrder = async (meal) => {
     setSelectedMeal(meal);
     setOrdered(true);
-    console.log(`Order placed for: ${meal.name}`);
+    console.log(`Ordered: ${meal.name}`);
 
     // Trigger SMS notification
     await sendSms(meal);
