@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
 
 const meals = [
- { id: 1, name: 'paghetti & Meatballs', image: '/images/spaghetti.jpg', time: '30 min' },
- { id: 2, name: 'Mac & Cheese', image: '/images/maccheese.jpg', time: '20 min' },
- { id: 3, name: 'Chicken Nuggets', image: '/images/chickennuggets.jpg', time: '25 min' },
- { id: 4, name: 'Pizza', image: '/images/pizza.jpg', time: '15 min' }
+ { id: 1, name: 'Spaghetti & Meatballs', image: 'images/spaghetti.jpg', time: '30 min' },
+ { id: 2, name: 'Mac & Cheese', image: 'images/maccheese.jpg', time: '20 min' },
+ { id: 3, name: 'Chicken Nuggets', image: 'images/chickennuggets.jpg', time: '25 min' },
+ { id: 4, name: 'Pizza', image: 'images/pizza.jpg', time: '15 min' }
 ];
 
 const App = () => {
