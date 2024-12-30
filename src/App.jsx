@@ -12,9 +12,9 @@ const App = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [ordered, setOrdered] = useState(false);
 
+  // Function to send SMS via backend
   const sendSms = async (meal) => {
-    const mealName = meal.name;
-    const mealTime = meal.time;
+    console.log('Sending SMS for:', meal); // Debug log
 
     try {
       const response = await fetch('http://localhost:3001/send-sms', {
@@ -22,25 +22,29 @@ const App = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ mealName, mealTime }),
+        body: JSON.stringify({
+          mealName: meal.name,
+          mealTime: meal.time,
+        }),
       });
 
       if (response.ok) {
-        console.log('SMS sent successfully to the preparer!');
+        console.log('SMS sent successfully!');
       } else {
         console.error('Failed to send SMS');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error sending SMS:', error);
     }
   };
 
+  // Handle user ordering a meal
   const handleOrder = async (meal) => {
     setSelectedMeal(meal);
     setOrdered(true);
-    console.log(`Ordered: ${meal.name}`);
+    console.log(`Order placed for: ${meal.name}`);
 
-    // Notify the preparer via SMS
+    // Trigger SMS notification
     await sendSms(meal);
   };
 
