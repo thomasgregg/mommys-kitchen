@@ -96,19 +96,20 @@ const App = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2">
           {meals.map((meal) => (
             <button
               key={meal.id}
               onClick={() => handleMealSelection(meal)}
-              className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+              className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+              style={{ minWidth: '160px', minHeight: '220px' }}
             >
               <img
                 src={meal.image}
                 alt={meal.name}
                 className="w-full rounded-lg mb-2"
               />
-              <h3 className="font-semibold text-gray-800">{meal.name}</h3>
+              <h3 className="font-semibold text-gray-800 text-lg">{meal.name}</h3>
               <p className="text-sm text-gray-500">{meal.time}</p>
             </button>
           ))}
