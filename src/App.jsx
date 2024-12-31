@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-route
 import { Bell } from 'lucide-react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import Confetti from 'react-confetti';
+import { FaWhatsapp, FaSms } from 'react-icons/fa';
 
 const meals = [
   { id: 1, name: 'Spaghetti & Meatballs', image: '/images/spaghetti.jpg', time: '30 min' },
@@ -51,28 +52,65 @@ const MealSelection = ({ onSelectMeal }) => {
     navigate('/confirm');
   };
 
+  const generateShareLink = (meal) => {
+    const appUrl = "https://mommys-kitchen.vercel.app"; // Replace with your actual app URL
+    return `${appUrl}/meal/${meal.id}`;
+  };
+
+  const encodeText = (text) => encodeURIComponent(text);
+
   return (
     <div className="grid grid-cols-2 gap-4">
       {meals.map((meal) => (
-        <button
-          key={meal.id}
-          onClick={() => handleMealSelection(meal)}
-          className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
-        >
-          <img
-            src={meal.image}
-            alt={meal.name}
-            className="w-full rounded-lg mb-2"
-          />
-          <h3 className="font-semibold text-gray-800">{meal.name}</h3>
-          <p className="text-sm text-gray-500">{meal.time}</p>
-        </button>
+        <div key={meal.id} className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+          <button
+            onClick={() => handleMealSelection(meal)}
+            className="w-full text-center"
+          >
+            <img
+              src={meal.image}
+              alt={meal.name}
+              className="w-full rounded-lg mb-2"
+            />
+            <h3 className="text-base font-medium text-gray-800">{meal.name}</h3> {/* Adjusted size */}
+          </button>
+          <div className="mt-2 flex justify-between items-center text-gray-500 text-xs">
+            {/* Meal time */}
+            <span>{meal.time}</span>
+            <span className="text-gray-300">|</span>
+            {/* Icons */}
+            <div className="flex space-x-2">
+              {/* Share via iMessage */}
+              <a
+                href={`sms:&body=${encodeText(
+                  `Check out this recipe: ${meal.name}! Here's the link: ${generateShareLink(meal)}`
+                )}`}
+                className="text-blue-600"
+                aria-label="Share via iMessage"
+              >
+                <FaSms size={16} />
+              </a>
+              {/* Share via WhatsApp */}
+              <a
+                href={`https://wa.me/?text=${encodeText(
+                  `Check out this recipe: ${meal.name}! Here's the link: ${generateShareLink(meal)}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-500"
+                aria-label="Share via WhatsApp"
+              >
+                <FaWhatsapp size={16} />
+              </a>
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );
 };
 
-// Confirmation component
+// Remaining components remain unchanged
 const Confirmation = ({ selectedMeal, onConfirm }) => {
   const navigate = useNavigate();
 
@@ -105,7 +143,6 @@ const Confirmation = ({ selectedMeal, onConfirm }) => {
   );
 };
 
-// OrderSuccess component
 const OrderSuccess = ({ selectedMeal }) => {
   const navigate = useNavigate();
 
@@ -140,7 +177,6 @@ const OrderSuccess = ({ selectedMeal }) => {
 const App = () => {
   const [selectedMeal, setSelectedMeal] = useState(null);
 
-  // Function to send SMS via the backend
   const sendSms = async (meal) => {
     try {
       const response = await fetch('https://mommys-kitchen.vercel.app/api/send-sms', {
