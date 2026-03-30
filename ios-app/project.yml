@@ -1,0 +1,53 @@
+name: MommysKitchen
+options:
+  minimumXcodeGenVersion: 2.38.0
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift.git
+    from: 2.39.0
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 12.11.0
+configs:
+  Debug: debug
+  Release: release
+targets:
+  MommysKitchen:
+    type: application
+    platform: iOS
+    deploymentTarget: '17.0'
+    sources:
+      - path: MommysKitchen
+    configFiles:
+      Debug: Configs/Debug.xcconfig
+      Release: Configs/Release.xcconfig
+    info:
+      path: MommysKitchen/Resources/Info.plist
+      properties:
+        UILaunchStoryboardName: LaunchScreen
+        UIApplicationSupportsIndirectInputEvents: true
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
+        APP_SCHEME: $(APP_SCHEME)
+    entitlements:
+      path: MommysKitchen/Resources/MommysKitchen.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mommyskitchen.app
+        PRODUCT_NAME: Mommy's Kitchen
+        TARGETED_DEVICE_FAMILY: 1
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_STRICT_CONCURRENCY: complete
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 1.0.0
+    dependencies:
+      - package: Supabase
+        product: Supabase
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseMessaging
+    scheme:
+      testTargets: []

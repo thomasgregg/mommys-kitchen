@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #14181f;
+  --card: #ffffff;
+  --card-foreground: #14181f;
+  --popover: #ffffff;
+  --popover-foreground: #14181f;
+  --primary: #d9784d;
+  --primary-foreground: #fffaf6;
+  --secondary: #ffffff;
+  --secondary-foreground: #1f2937;
+  --muted: #ffffff;
+  --muted-foreground: #6b7280;
+  --accent: #f1f5f9;
+  --accent-foreground: #111827;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #d7dde5;
+  --input: #d7dde5;
+  --ring: #d9784d;
+  --chart-1: #d9784d;
+  --chart-2: #4f7cff;
+  --chart-3: #16a34a;
+  --chart-4: #a855f7;
+  --chart-5: #0891b2;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #14181f;
+  --sidebar-primary: #d9784d;
+  --sidebar-primary-foreground: #fffaf6;
+  --sidebar-accent: #f4f6f8;
+  --sidebar-accent-foreground: #14181f;
+  --sidebar-border: #dce2e8;
+  --sidebar-ring: #d9784d;
+  --font-heading: var(--font-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 18%, white);
+}
+
+[data-slot="card"] {
+  backdrop-filter: none;
+}
+
+[data-slot="table"] tbody tr:last-child {
+  border-bottom: 0;
+}
+
+[data-slot="table"] td,
+[data-slot="table"] th {
+  vertical-align: middle;
+}
