@@ -16,7 +16,8 @@ Deno.serve(async (request) => {
     const userClient = createUserClient(authHeader);
     const adminClient = createAdminClient();
 
-    const { data: userData, error: authError } = await userClient.auth.getUser();
+    const { data: userData, error: authError } = await userClient.auth
+      .getUser();
     if (authError || !userData.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -56,9 +57,14 @@ Deno.serve(async (request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });

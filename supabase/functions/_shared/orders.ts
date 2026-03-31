@@ -33,6 +33,8 @@ export const statusNotificationMap = {
 
 export type NotifiableOrderStatus = keyof typeof statusNotificationMap;
 
-export function isNotifiableStatus(status: string): status is NotifiableOrderStatus {
+export function isNotifiableStatus(
+  status: string,
+): status is NotifiableOrderStatus {
   return status in statusNotificationMap;
 }

@@ -19,7 +19,10 @@ async function importPrivateKey(privateKeyPem: string) {
     .replace("-----BEGIN PRIVATE KEY-----", "")
     .replace("-----END PRIVATE KEY-----", "")
     .replace(/\s+/g, "");
-  const binaryKey = Uint8Array.from(atob(pemBody), (char) => char.charCodeAt(0));
+  const binaryKey = Uint8Array.from(
+    atob(pemBody),
+    (char) => char.charCodeAt(0),
+  );
 
   return await crypto.subtle.importKey(
     "pkcs8",
@@ -34,13 +37,18 @@ async function importPrivateKey(privateKeyPem: string) {
 }
 
 function base64UrlEncode(input: string | Uint8Array) {
-  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+  const bytes = typeof input === "string"
+    ? new TextEncoder().encode(input)
+    : input;
   let binary = "";
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);
   });
 
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(
+    /=+$/,
+    "",
+  );
 }
 
 async function createGoogleAccessToken(serviceAccount: GoogleServiceAccount) {
@@ -61,7 +69,9 @@ async function createGoogleAccessToken(serviceAccount: GoogleServiceAccount) {
     key,
     new TextEncoder().encode(unsignedToken),
   );
-  const signedJwt = `${unsignedToken}.${base64UrlEncode(new Uint8Array(signature))}`;
+  const signedJwt = `${unsignedToken}.${
+    base64UrlEncode(new Uint8Array(signature))
+  }`;
 
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -83,7 +93,9 @@ async function createGoogleAccessToken(serviceAccount: GoogleServiceAccount) {
   return tokenJson.access_token as string;
 }
 
-export async function sendOrderPush({ userId, orderId, status }: SendOrderPushInput) {
+export async function sendOrderPush(
+  { userId, orderId, status }: SendOrderPushInput,
+) {
   if (!isNotifiableStatus(status)) {
     return;
   }
@@ -107,11 +119,17 @@ export async function sendOrderPush({ userId, orderId, status }: SendOrderPushIn
   const privateKey = Deno.env.get("FIREBASE_PRIVATE_KEY") ?? "";
 
   if (!projectId || !clientEmail || !privateKey) {
-    console.warn("Skipping FCM send because Firebase service account secrets are missing.");
+    console.warn(
+      "Skipping FCM send because Firebase service account secrets are missing.",
+    );
     return;
   }
 
-  const accessToken = await createGoogleAccessToken({ projectId, clientEmail, privateKey });
+  const accessToken = await createGoogleAccessToken({
+    projectId,
+    clientEmail,
+    privateKey,
+  });
   const messageDefinition = statusNotificationMap[status];
 
   await Promise.all(
@@ -139,14 +157,17 @@ export async function sendOrderPush({ userId, orderId, status }: SendOrderPushIn
         },
       };
 
-      const response = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       const responseJson = await response.json().catch(() => null);
       const notificationInsert = {
