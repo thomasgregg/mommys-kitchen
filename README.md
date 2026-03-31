@@ -146,6 +146,18 @@ This repo contains:
     └── seed/seed.sql
 ```
 
+
+## Deployment
+
+For the production-ready web and backend workflow, see:
+- [/Users/thomas.gregg/Documents/MommysKitchen/docs/deploying-web-and-backend.md](/Users/thomas.gregg/Documents/MommysKitchen/docs/deploying-web-and-backend.md)
+
+Recommended setup:
+- GitHub for source control and CI
+- Vercel for `admin-web`
+- Supabase GitHub integration for migrations and edge functions
+- GitHub Actions for checks only
+
 ## Local Setup
 
 ### 1. Supabase

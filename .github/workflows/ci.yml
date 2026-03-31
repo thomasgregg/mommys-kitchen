@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  admin-web:
+    name: Admin web build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin-web
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: admin-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build admin web
+        run: npm run build
+
+  supabase-functions:
+    name: Supabase function typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Format check shared function code
+        run: deno fmt --check supabase/functions
+
+      - name: Typecheck edge functions
+        run: |
+          deno check supabase/functions/create-order/index.ts
+          deno check supabase/functions/update-order-status/index.ts
+          deno check supabase/functions/register-device-token/index.ts
