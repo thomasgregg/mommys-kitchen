@@ -47,17 +47,31 @@ jobs:
           raw_ref="${raw_ref%%/*}"
           raw_ref="${raw_ref%.supabase.co}"
 
-          if [[ ! "$raw_ref" =~ ^[a-z]{20}$ ]]; then
-            echo "::error::SUPABASE_PROJECT_REF must resolve to a 20-character project ref, got '$raw_ref'."
-            exit 1
-          fi
-
           db_url="${SUPABASE_DB_URL}"
           db_url="${db_url#\"}"
           db_url="${db_url%\"}"
 
           if [[ -z "$db_url" ]]; then
             echo "::error::SUPABASE_DB_URL repository secret is missing. Add the Session pooler or direct Postgres connection string from Supabase Connect."
+            exit 1
+          fi
+
+          extracted_ref=""
+          if [[ "$db_url" =~ postgres\.([a-z]{20})[:@] ]]; then
+            extracted_ref="${BASH_REMATCH[1]}"
+          elif [[ "$db_url" =~ db\.([a-z]{20})\.supabase\.co ]]; then
+            extracted_ref="${BASH_REMATCH[1]}"
+          fi
+
+          if [[ -n "$extracted_ref" ]]; then
+            if [[ "$raw_ref" =~ ^[a-z]{20}$ && "$raw_ref" != "$extracted_ref" ]]; then
+              echo "::warning::SUPABASE_PROJECT_REF ('$raw_ref') does not match SUPABASE_DB_URL ('$extracted_ref'). Using the DB URL project ref."
+            fi
+            raw_ref="$extracted_ref"
+          fi
+
+          if [[ ! "$raw_ref" =~ ^[a-z]{20}$ ]]; then
+            echo "::error::Could not resolve a valid 20-character Supabase project ref from SUPABASE_PROJECT_REF or SUPABASE_DB_URL."
             exit 1
           fi
 
