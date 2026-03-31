@@ -42,24 +42,48 @@ final class AppContext: ObservableObject {
     }
 
     var currentSupabaseURL: String {
-        AppConfig.supabaseURLString
+        AppConfig.currentBackend.urlString
     }
 
-    var defaultSupabaseURL: String {
-        AppConfig.defaultSupabaseURLString
+    var currentBackendName: String {
+        AppConfig.currentBackend.title
     }
 
-    var isUsingCustomSupabaseURL: Bool {
-        AppConfig.isUsingCustomSupabaseURL
+    var localSupabaseURL: String {
+        AppConfig.localConfiguration.urlString
     }
 
-    func updateSupabaseURL(_ urlString: String) throws {
-        try AppConfig.saveSupabaseURL(urlString)
+    var productionSupabaseURL: String {
+        AppConfig.productionConfiguration.urlString
+    }
+
+    var selectedBackendMode: AppConfig.BackendMode {
+        AppConfig.selectedBackendMode
+    }
+
+    var isUsingCustomBackend: Bool {
+        AppConfig.isUsingCustomBackend
+    }
+
+    func updateBackendMode(_ mode: AppConfig.BackendMode) {
+        switch mode {
+        case .local:
+            AppConfig.selectLocalBackend()
+        case .production:
+            AppConfig.selectProductionBackend()
+        case .custom:
+            AppConfig.saveBackendMode(.custom)
+        }
         rebuildForServerChange()
     }
 
-    func resetSupabaseURL() {
-        AppConfig.resetSupabaseURL()
+    func updateCustomBackend(urlString: String, publishableKey: String) throws {
+        try AppConfig.saveCustomBackend(url: urlString, publishableKey: publishableKey)
+        rebuildForServerChange()
+    }
+
+    func resetToLocalBackend() {
+        AppConfig.resetCustomBackend()
         rebuildForServerChange()
     }
 
