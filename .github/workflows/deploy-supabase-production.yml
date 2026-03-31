@@ -21,6 +21,7 @@ jobs:
     permissions:
       contents: read
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -29,10 +30,29 @@ jobs:
       SUPABASE_ADMIN_PASSWORD: ${{ secrets.SUPABASE_ADMIN_PASSWORD }}
       SUPABASE_ADMIN_FULL_NAME: ${{ secrets.SUPABASE_ADMIN_FULL_NAME }}
       SUPABASE_ADMIN_PHONE: ${{ secrets.SUPABASE_ADMIN_PHONE }}
-      SUPABASE_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Normalize Supabase project ref
+        id: supabase
+        shell: bash
+        run: |
+          raw="${SUPABASE_PROJECT_REF}"
+          raw="${raw#\"}"
+          raw="${raw%\"}"
+          raw="${raw#https://}"
+          raw="${raw#http://}"
+          raw="${raw%%/*}"
+          raw="${raw%.supabase.co}"
+
+          if [[ ! "$raw" =~ ^[a-z]{20}$ ]]; then
+            echo "::error::SUPABASE_PROJECT_REF must resolve to a 20-character project ref, got '$raw'."
+            exit 1
+          fi
+
+          echo "project_ref=$raw" >> "$GITHUB_OUTPUT"
+          echo "supabase_url=https://$raw.supabase.co" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -52,7 +72,7 @@ jobs:
 
       - name: Link Supabase project
         working-directory: supabase
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" -p "$SUPABASE_DB_PASSWORD" --yes
+        run: supabase link --project-ref "${{ steps.supabase.outputs.project_ref }}" -p "$SUPABASE_DB_PASSWORD" --yes
 
       - name: Apply migrations and seed data
         working-directory: supabase
@@ -61,10 +81,12 @@ jobs:
       - name: Deploy edge functions
         working-directory: supabase
         run: |
-          supabase functions deploy create-order --project-ref "$SUPABASE_PROJECT_REF" --use-api
-          supabase functions deploy update-order-status --project-ref "$SUPABASE_PROJECT_REF" --use-api
-          supabase functions deploy register-device-token --project-ref "$SUPABASE_PROJECT_REF" --use-api
+          supabase functions deploy create-order --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
+          supabase functions deploy update-order-status --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
+          supabase functions deploy register-device-token --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
 
       - name: Ensure admin auth user and profile
         working-directory: admin-web
+        env:
+          SUPABASE_URL: ${{ steps.supabase.outputs.supabase_url }}
         run: node ./scripts/bootstrap-admin.mjs
