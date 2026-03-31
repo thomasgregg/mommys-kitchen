@@ -23,9 +23,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_ADMIN_EMAIL: ${{ secrets.SUPABASE_ADMIN_EMAIL }}
       SUPABASE_ADMIN_PASSWORD: ${{ secrets.SUPABASE_ADMIN_PASSWORD }}
@@ -39,13 +37,7 @@ jobs:
         id: supabase
         shell: bash
         run: |
-          raw_ref="${SUPABASE_PROJECT_REF}"
-          raw_ref="${raw_ref#\"}"
-          raw_ref="${raw_ref%\"}"
-          raw_ref="${raw_ref#https://}"
-          raw_ref="${raw_ref#http://}"
-          raw_ref="${raw_ref%%/*}"
-          raw_ref="${raw_ref%.supabase.co}"
+          raw_ref=""
 
           db_url="${SUPABASE_DB_URL}"
           db_url="${db_url#\"}"
@@ -64,14 +56,11 @@ jobs:
           fi
 
           if [[ -n "$extracted_ref" ]]; then
-            if [[ "$raw_ref" =~ ^[a-z]{20}$ && "$raw_ref" != "$extracted_ref" ]]; then
-              echo "::warning::SUPABASE_PROJECT_REF ('$raw_ref') does not match SUPABASE_DB_URL ('$extracted_ref'). Using the DB URL project ref."
-            fi
             raw_ref="$extracted_ref"
           fi
 
           if [[ ! "$raw_ref" =~ ^[a-z]{20}$ ]]; then
-            echo "::error::Could not resolve a valid 20-character Supabase project ref from SUPABASE_PROJECT_REF or SUPABASE_DB_URL."
+            echo "::error::Could not resolve a valid 20-character Supabase project ref from SUPABASE_DB_URL."
             exit 1
           fi
 

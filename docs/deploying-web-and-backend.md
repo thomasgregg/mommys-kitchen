@@ -150,9 +150,7 @@ In GitHub:
 
 Required:
 - `SUPABASE_ACCESS_TOKEN`
-- `SUPABASE_PROJECT_REF`
 - `SUPABASE_DB_URL`
-- `SUPABASE_DB_PASSWORD`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_ADMIN_EMAIL`
 - `SUPABASE_ADMIN_PASSWORD`
@@ -164,15 +162,9 @@ Recommended:
 Use these values:
 - `SUPABASE_ACCESS_TOKEN`
   - create in Supabase: `Account > Access Tokens`
-- `SUPABASE_PROJECT_REF`
-  - the short project ref from your hosted Supabase project URL
-  - example: `jybglcycstgjwnyagztp`
 - `SUPABASE_DB_URL`
   - from `Connect` in Supabase
   - use the session pooler connection string for GitHub Actions
-- `SUPABASE_DB_PASSWORD`
-  - the database password you chose when creating the hosted project
-  - keep this for manual CLI use if needed
 - `SUPABASE_SERVICE_ROLE_KEY`
   - from `Project Settings > API`
 - `SUPABASE_ADMIN_EMAIL`
@@ -185,7 +177,7 @@ Use these values:
   - example: `555-0100`
 
 What the workflow does on every `main` push:
-- normalizes the hosted Supabase project ref
+- derives the hosted Supabase project ref from `SUPABASE_DB_URL`
 - applies migrations over `SUPABASE_DB_URL`
 - applies `seed.sql`
 - deploys the three edge functions
