@@ -151,6 +151,7 @@ In GitHub:
 Required:
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_PROJECT_REF`
+- `SUPABASE_DB_URL`
 - `SUPABASE_DB_PASSWORD`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_ADMIN_EMAIL`
@@ -166,8 +167,12 @@ Use these values:
 - `SUPABASE_PROJECT_REF`
   - the short project ref from your hosted Supabase project URL
   - example: `jybglcycstgjwnyagztp`
+- `SUPABASE_DB_URL`
+  - from `Connect` in Supabase
+  - use the session pooler connection string for GitHub Actions
 - `SUPABASE_DB_PASSWORD`
   - the database password you chose when creating the hosted project
+  - keep this for manual CLI use if needed
 - `SUPABASE_SERVICE_ROLE_KEY`
   - from `Project Settings > API`
 - `SUPABASE_ADMIN_EMAIL`
@@ -180,8 +185,8 @@ Use these values:
   - example: `555-0100`
 
 What the workflow does on every `main` push:
-- links to the hosted Supabase project
-- applies migrations
+- normalizes the hosted Supabase project ref
+- applies migrations over `SUPABASE_DB_URL`
 - applies `seed.sql`
 - deploys the three edge functions
 - creates the admin auth user if missing
@@ -250,8 +255,7 @@ Why:
 
 ```bash
 cd /Users/thomas.gregg/Documents/MommysKitchen/supabase
-supabase link --project-ref YOUR_PRODUCTION_PROJECT_REF -p YOUR_DB_PASSWORD
-supabase db push --include-seed --include-all -p YOUR_DB_PASSWORD
+supabase db push --db-url "YOUR_SUPABASE_DB_URL" --include-seed --include-all
 supabase functions deploy create-order --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
 supabase functions deploy update-order-status --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
 supabase functions deploy register-device-token --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api

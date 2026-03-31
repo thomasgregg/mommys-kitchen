@@ -24,6 +24,7 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_ADMIN_EMAIL: ${{ secrets.SUPABASE_ADMIN_EMAIL }}
@@ -34,25 +35,35 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Normalize Supabase project ref
+      - name: Normalize Supabase settings
         id: supabase
         shell: bash
         run: |
-          raw="${SUPABASE_PROJECT_REF}"
-          raw="${raw#\"}"
-          raw="${raw%\"}"
-          raw="${raw#https://}"
-          raw="${raw#http://}"
-          raw="${raw%%/*}"
-          raw="${raw%.supabase.co}"
+          raw_ref="${SUPABASE_PROJECT_REF}"
+          raw_ref="${raw_ref#\"}"
+          raw_ref="${raw_ref%\"}"
+          raw_ref="${raw_ref#https://}"
+          raw_ref="${raw_ref#http://}"
+          raw_ref="${raw_ref%%/*}"
+          raw_ref="${raw_ref%.supabase.co}"
 
-          if [[ ! "$raw" =~ ^[a-z]{20}$ ]]; then
-            echo "::error::SUPABASE_PROJECT_REF must resolve to a 20-character project ref, got '$raw'."
+          if [[ ! "$raw_ref" =~ ^[a-z]{20}$ ]]; then
+            echo "::error::SUPABASE_PROJECT_REF must resolve to a 20-character project ref, got '$raw_ref'."
             exit 1
           fi
 
-          echo "project_ref=$raw" >> "$GITHUB_OUTPUT"
-          echo "supabase_url=https://$raw.supabase.co" >> "$GITHUB_OUTPUT"
+          db_url="${SUPABASE_DB_URL}"
+          db_url="${db_url#\"}"
+          db_url="${db_url%\"}"
+
+          if [[ -z "$db_url" ]]; then
+            echo "::error::SUPABASE_DB_URL repository secret is missing. Add the Session pooler or direct Postgres connection string from Supabase Connect."
+            exit 1
+          fi
+
+          echo "project_ref=$raw_ref" >> "$GITHUB_OUTPUT"
+          echo "supabase_url=https://$raw_ref.supabase.co" >> "$GITHUB_OUTPUT"
+          echo "db_url=$db_url" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -70,13 +81,9 @@ jobs:
         with:
           version: latest
 
-      - name: Link Supabase project
-        working-directory: supabase
-        run: supabase link --project-ref "${{ steps.supabase.outputs.project_ref }}" -p "$SUPABASE_DB_PASSWORD" --yes
-
       - name: Apply migrations and seed data
         working-directory: supabase
-        run: supabase db push --linked --include-seed --include-all -p "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --db-url "${{ steps.supabase.outputs.db_url }}" --include-seed --include-all
 
       - name: Deploy edge functions
         working-directory: supabase
