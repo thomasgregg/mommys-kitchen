@@ -10,6 +10,7 @@ struct ProfileView: View {
                 if let profile = authManager.profile {
                     Section("Account") {
                         LabeledContent("Name", value: profile.fullName ?? "Not set")
+                        LabeledContent("Email", value: authManager.currentUser?.email ?? "Not set")
                         LabeledContent("Phone", value: profile.phone ?? "Not set")
                         LabeledContent("Role", value: profile.role.rawValue.capitalized)
                     }

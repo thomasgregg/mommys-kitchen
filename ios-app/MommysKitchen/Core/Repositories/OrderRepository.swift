@@ -28,6 +28,11 @@ struct OrderRepository {
         struct Item: Encodable {
             let menuItemId: UUID
             let quantity: Int
+
+            enum CodingKeys: String, CodingKey {
+                case menuItemId = "menu_item_id"
+                case quantity
+            }
         }
 
         let items: [Item]
@@ -38,6 +43,12 @@ struct OrderRepository {
         let orderId: UUID
         let newStatus: OrderStatus
         let note: String?
+
+        enum CodingKeys: String, CodingKey {
+            case orderId = "order_id"
+            case newStatus = "new_status"
+            case note
+        }
     }
 
     private struct RegisterDeviceTokenBody: Encodable {
@@ -45,6 +56,13 @@ struct OrderRepository {
         let platform: String
         let appTarget: PushAppTarget
         let pushEnvironment: PushEnvironment
+
+        enum CodingKeys: String, CodingKey {
+            case deviceToken = "device_token"
+            case platform
+            case appTarget = "app_target"
+            case pushEnvironment = "push_environment"
+        }
     }
 
     let supabase: SupabaseService

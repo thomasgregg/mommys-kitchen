@@ -298,19 +298,6 @@ private struct ActiveOrderCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-
-            if !timelineEntries.isEmpty {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Updates")
-                        .font(.subheadline.weight(.semibold))
-
-                    ForEach(timelineEntries) { entry in
-                        OrderTimelineRow(entry: entry)
-                    }
-                }
-            }
         }
         .padding(.vertical, 6)
     }
@@ -318,11 +305,6 @@ private struct ActiveOrderCard: View {
     private var sortedHistory: [OrderStatusHistoryEntry] {
         order.orderStatusHistory.sorted(by: { $0.createdAt > $1.createdAt })
     }
-
-    private var timelineEntries: [OrderStatusHistoryEntry] {
-        sortedHistory.filter { $0.status != .placed }
-    }
-
     private var latestEntry: OrderStatusHistoryEntry? {
         sortedHistory.first
     }
