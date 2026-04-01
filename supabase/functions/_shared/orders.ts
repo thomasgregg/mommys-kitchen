@@ -4,20 +4,10 @@ export const customerStatusNotificationMap = {
     title: "Order accepted",
     body: "Mommy's Kitchen has started your order.",
   },
-  preparing: {
-    type: "order_preparing",
-    title: "Now preparing",
-    body: "Your meal is being prepared right now.",
-  },
   ready: {
     type: "order_ready",
     title: "Ready for pickup",
     body: "Your order is ready and waiting for you.",
-  },
-  completed: {
-    type: "order_completed",
-    title: "Order completed",
-    body: "Thanks for ordering with Mommy's Kitchen.",
   },
   cancelled: {
     type: "order_cancelled",
