@@ -35,7 +35,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.mommyskitchen.app
         PRODUCT_NAME: Mommy's Kitchen
         TARGETED_DEVICE_FAMILY: 1
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: "BB4MFJBDC7"
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_STRICT_CONCURRENCY: complete

@@ -72,6 +72,7 @@ struct OrdersView: View {
     @ObservedObject private var cartStore: CartStore
     @ObservedObject private var pushManager: PushNotificationManager
     @State private var selectedOrderID: UUID?
+    @State private var navigationPath: [UUID] = []
 
     init(repository: OrderRepository, cartStore: CartStore, pushManager: PushNotificationManager) {
         _viewModel = StateObject(wrappedValue: OrdersViewModel(repository: repository))
@@ -80,7 +81,7 @@ struct OrdersView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             List {
                 if let errorMessage = viewModel.errorMessage {
                     Section {
@@ -93,11 +94,7 @@ struct OrdersView: View {
                 Section(activeOrdersSectionTitle) {
                     if !activeOrders.isEmpty {
                         ForEach(activeOrders) { activeOrder in
-                            NavigationLink {
-                                OrderDetailView(order: activeOrder) {
-                                    await viewModel.cancel(activeOrder)
-                                }
-                            } label: {
+                            NavigationLink(value: activeOrder.id) {
                                 ActiveOrderCard(order: activeOrder)
                             }
                         }
@@ -114,12 +111,7 @@ struct OrdersView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(viewModel.historyOrders) { order in
-                            NavigationLink {
-                                OrderDetailView(order: order) {
-                                    cartStore.load(from: order)
-                                    return true
-                                }
-                            } label: {
+                            NavigationLink(value: order.id) {
                                 HistoryOrderRow(order: order)
                             }
                         }
@@ -133,19 +125,38 @@ struct OrdersView: View {
             .navigationTitle("Orders")
             .navigationBarTitleDisplayMode(.inline)
             .refreshable { await viewModel.refresh() }
+            .navigationDestination(for: UUID.self) { orderID in
+                if let order = order(for: orderID) {
+                    OrderDetailView(order: order) {
+                        if order.isTrackable && order.status == .placed {
+                            return await viewModel.cancel(order)
+                        } else {
+                            cartStore.load(from: order)
+                            return true
+                        }
+                    }
+                } else {
+                    ProgressView("Loading order...")
+                        .task {
+                            await viewModel.refresh(silent: true)
+                        }
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(KitchenTheme.background.ignoresSafeArea())
         .task {
             viewModel.startPolling()
+            await consumePendingNotificationOpen()
         }
         .onDisappear {
             viewModel.stopPolling()
         }
         .onChange(of: pushManager.lastOpenedOrderID) { _, orderID in
             guard let orderID else { return }
-            selectedOrderID = orderID
-            Task { await viewModel.refresh(silent: true) }
+            Task {
+                await consumePendingNotificationOpen(orderID: orderID)
+            }
         }
     }
 
@@ -162,6 +173,20 @@ struct OrdersView: View {
 
     private var activeOrdersSectionTitle: String {
         activeOrders.count == 1 ? "Active order" : "Active orders"
+    }
+
+    private func order(for orderID: UUID) -> Order? {
+        viewModel.orders.first(where: { $0.id == orderID })
+    }
+
+    private func consumePendingNotificationOpen(orderID: UUID? = nil) async {
+        guard let orderID = orderID ?? pushManager.lastOpenedOrderID else { return }
+        selectedOrderID = orderID
+        await viewModel.refresh(silent: true)
+        if order(for: orderID) != nil {
+            navigationPath = [orderID]
+        }
+        pushManager.lastOpenedOrderID = nil
     }
 }
 

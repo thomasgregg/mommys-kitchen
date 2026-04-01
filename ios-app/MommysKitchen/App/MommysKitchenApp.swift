@@ -52,6 +52,7 @@ private struct AuthGateView: View {
 private struct MainTabView: View {
     @EnvironmentObject private var appContext: AppContext
     @ObservedObject var cartStore: CartStore
+    @ObservedObject private var pushManager = PushNotificationManager.shared
     @State private var selectedTab: AppTab = .menu
     @State private var cartRootID = UUID()
 
@@ -90,8 +91,16 @@ private struct MainTabView: View {
         }
         .background(KitchenTheme.background.ignoresSafeArea())
         .onChange(of: selectedTab) { oldValue, newValue in
-            guard oldValue == .cart, newValue != .cart, cartStore.lines.isEmpty else { return }
+            guard oldValue == .cart, newValue != .cart else { return }
             cartRootID = UUID()
+        }
+        .onAppear {
+            guard pushManager.lastOpenedOrderID != nil else { return }
+            selectedTab = .orders
+        }
+        .onChange(of: pushManager.lastOpenedOrderID) { _, orderID in
+            guard orderID != nil else { return }
+            selectedTab = .orders
         }
     }
 }

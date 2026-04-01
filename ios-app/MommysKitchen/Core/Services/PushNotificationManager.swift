@@ -16,6 +16,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
 
     private override init() {
         super.init()
+        UNUserNotificationCenter.current().delegate = self
     }
 
     func configure(authManager: AuthManager, orderRepository: OrderRepository) {
@@ -25,7 +26,6 @@ final class PushNotificationManager: NSObject, ObservableObject {
             self?.flushPendingTokenIfNeeded()
         }
 
-        UNUserNotificationCenter.current().delegate = self
     }
 
     func requestAuthorization() async {
@@ -64,7 +64,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
         registerIfPossible(token: pendingDeviceToken)
     }
 
-    private func consumeNotification(userInfo: [AnyHashable: Any]) {
+    func handleNotification(userInfo: [AnyHashable: Any]) {
         if let rawOrderID = userInfo["order_id"] as? String, let orderID = UUID(uuidString: rawOrderID) {
             lastOpenedOrderID = orderID
         }
@@ -86,7 +86,7 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         Task { @MainActor in
-            self.consumeNotification(userInfo: response.notification.request.content.userInfo)
+            self.handleNotification(userInfo: response.notification.request.content.userInfo)
         }
         completionHandler()
     }

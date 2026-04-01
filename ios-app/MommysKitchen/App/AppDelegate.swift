@@ -6,6 +6,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         configureAppearance()
+        if let userInfo = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
+            Task { @MainActor in
+                PushNotificationManager.shared.handleNotification(userInfo: userInfo)
+            }
+        }
         return true
     }
 

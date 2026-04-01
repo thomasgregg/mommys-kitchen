@@ -103,6 +103,33 @@ final class CheckoutViewModel: ObservableObject {
     var isLocked: Bool {
         createdOrder != nil
     }
+
+    var displayLines: [CheckoutDisplayLine] {
+        if let createdOrder {
+            return createdOrder.orderItems.map {
+                CheckoutDisplayLine(
+                    name: $0.itemNameSnapshot,
+                    quantity: $0.quantity,
+                    lineTotalCents: $0.unitPriceCents * $0.quantity
+                )
+            }
+        }
+
+        return checkoutSnapshot.map {
+            CheckoutDisplayLine(
+                name: $0.menuItem.name,
+                quantity: $0.quantity,
+                lineTotalCents: $0.lineTotalCents
+            )
+        }
+    }
+}
+
+struct CheckoutDisplayLine: Identifiable {
+    let id = UUID()
+    let name: String
+    let quantity: Int
+    let lineTotalCents: Int
 }
 
 struct CartView: View {
@@ -192,8 +219,26 @@ struct CheckoutView: View {
                     Text("Order summary")
                         .font(.headline)
 
+                    ForEach(viewModel.displayLines) { line in
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(line.name)
+                                    .foregroundStyle(KitchenTheme.text)
+                                Text("Qty \(line.quantity)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(KitchenTheme.muted)
+                            }
+                            Spacer()
+                            Text(Formatters.currency(cents: line.lineTotalCents))
+                                .fontWeight(.semibold)
+                                .foregroundStyle(KitchenTheme.text)
+                        }
+                    }
+
+                    Divider()
+
                     HStack {
-                        Text("\(viewModel.displayItemCount) item\(viewModel.displayItemCount == 1 ? "" : "s")")
+                        Text("Total (\(viewModel.displayItemCount) item\(viewModel.displayItemCount == 1 ? "" : "s"))")
                             .foregroundStyle(KitchenTheme.muted)
                         Spacer()
                         Text(Formatters.currency(cents: viewModel.displaySubtotalCents))

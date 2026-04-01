@@ -11,29 +11,41 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="page">
-      <section class="hero">
-        <div class="brand">
-          <img
-            class="brand-mark"
-            src="./brand/mommys-kitchen-mark.svg"
-            alt="Mommy's Kitchen logo"
-          />
-          <span>Mommy's Kitchen</span>
+    <main class="page stack">
+      <section class="hero landing-hero">
+        <div class="hero-top">
+          <div class="brand">
+            <img
+              class="brand-mark"
+              src="./brand/mommys-kitchen-mark.svg"
+              alt="Mommy's Kitchen logo"
+            />
+            <span>Mommy's Kitchen</span>
+          </div>
+          <span class="eyebrow">Customer App</span>
         </div>
-        <span class="eyebrow">Customer App</span>
-        <h1>Support and privacy, all in one calm place.</h1>
-        <p class="lede">
-          This site provides the public support page and privacy policy for the
-          Mommy's Kitchen iPhone app.
-        </p>
+        <div class="landing-copy">
+          <h1>Support and privacy for the family app.</h1>
+          <p class="lede">
+            This site contains the public support page and privacy policy for
+            the Mommy's Kitchen iPhone app.
+          </p>
+        </div>
         <div class="button-row">
           <a class="button primary" href="./support/">Open support page</a>
           <a class="button" href="./privacy/">Read privacy policy</a>
         </div>
-        <p class="meta">
-          App bundle ID: <code>com.mommyskitchen.app</code>
-        </p>
+      </section>
+
+      <section class="panel info-strip">
+        <div>
+          <p class="label">App bundle ID</p>
+          <p class="meta compact"><code>com.mommyskitchen.app</code></p>
+        </div>
+        <div>
+          <p class="label">Purpose</p>
+          <p class="meta compact">App Store support and privacy links</p>
+        </div>
       </section>
     </main>
   </body>
