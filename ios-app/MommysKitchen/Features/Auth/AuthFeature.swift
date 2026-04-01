@@ -114,7 +114,7 @@ struct AuthView: View {
                         .textContentType(.emailAddress)
 
                     SecureField("Password", text: $viewModel.password)
-                        .textContentType(.password)
+                        .textContentType(viewModel.mode == .signUp ? .newPassword : .password)
                 }
 
                 if let errorMessage = authManager.errorMessage {
@@ -166,6 +166,7 @@ struct AuthView: View {
             #endif
             .onChange(of: viewModel.mode) { _, _ in
                 authManager.errorMessage = nil
+                viewModel.password = ""
             }
             .safeAreaInset(edge: .bottom) {
                 Button {

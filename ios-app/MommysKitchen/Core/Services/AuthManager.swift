@@ -116,7 +116,7 @@ final class AuthManager: ObservableObject {
 
             profile = nil
             state = .signedOut
-            accountDeletionMessage = "Your account was deleted. Existing order records stay anonymized for kitchen history."
+            accountDeletionMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }

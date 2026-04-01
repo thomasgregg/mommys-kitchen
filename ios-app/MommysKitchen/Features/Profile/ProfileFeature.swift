@@ -34,7 +34,7 @@ struct ProfileView: View {
                 }
                 #endif
 
-                Section {
+                Section("Account actions") {
                     Button("Delete account", role: .destructive) {
                         showingDeleteConfirmation = true
                     }
@@ -58,11 +58,7 @@ struct ProfileView: View {
             .contentMargins(.bottom, 96, for: .scrollContent)
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog(
-                "Delete account?",
-                isPresented: $showingDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
+            .alert("Delete account?", isPresented: $showingDeleteConfirmation) {
                 Button("Delete account", role: .destructive) {
                     Task { await authManager.deleteAccount() }
                 }
