@@ -9,7 +9,7 @@ export default async function LoginPage({
 
   return (
     <main className="min-h-screen px-4 py-10 md:px-6 md:py-16">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-7xl items-center">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full items-center justify-center">
         <LoginForm error={error} />
       </div>
     </main>

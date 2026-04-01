@@ -38,7 +38,7 @@ enum AppConfig {
     private static let fallbackLocalAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
     private static let productionURLString = "https://tzzitwqfzntwpnakikfp.supabase.co"
-    private static let productionAnonKey = "sb_publishable_2Xua6sDOdAYCBQG1LNix8g_iZE_gybD"
+    private static let productionAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6eml0d3Fmem50d3BuYWtpa2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODE0MzEsImV4cCI6MjA5MDU1NzQzMX0.2fVG4HojXXnkAzEpAtK5m6oJjaN-HECqGyPux3C1JBQ"
 
     static var localConfiguration: BackendConfiguration {
         BackendConfiguration(

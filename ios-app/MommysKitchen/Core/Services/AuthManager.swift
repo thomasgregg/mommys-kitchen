@@ -70,7 +70,15 @@ final class AuthManager: ObservableObject {
                 "phone": .string(phone)
             ]
             let response = try await supabase.client.auth.signUp(email: email, password: password, data: metadata)
-            await handleSession(response.user)
+            if let session = response.session {
+                _ = session
+                let normalizedSession = try await supabase.client.auth.signIn(email: email, password: password)
+                await handleSession(normalizedSession.user)
+            } else {
+                profile = nil
+                state = .signedOut
+                errorMessage = "Check your email to confirm your account before signing in."
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
