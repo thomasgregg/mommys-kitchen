@@ -59,12 +59,9 @@ a {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: 22px;
+  display: block;
+  object-fit: cover;
+  flex: 0 0 auto;
 }
 
 h1 {
