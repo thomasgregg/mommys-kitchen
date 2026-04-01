@@ -82,9 +82,13 @@ final class AppContext: ObservableObject {
         rebuildForServerChange()
     }
 
-    func resetToLocalBackend() {
+    func resetToDefaultBackend() {
         AppConfig.resetCustomBackend()
         rebuildForServerChange()
+    }
+
+    func resetToLocalBackend() {
+        resetToDefaultBackend()
     }
 
     private func rebuildForServerChange() {

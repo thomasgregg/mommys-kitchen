@@ -65,15 +65,16 @@ This repo expects these functions to exist in production:
 - `create-order`
 - `update-order-status`
 - `register-device-token`
+- `delete-account`
 
 Set any needed function secrets in Supabase before enabling production usage.
 
-For push notifications, add the relevant secrets if you use them:
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CLIENT_EMAIL`
-- `FIREBASE_PRIVATE_KEY`
-
-If you later switch to direct APNs, set the APNs secrets instead.
+For direct APNs push delivery, add these Edge Function secrets in Supabase:
+- `APNS_TEAM_ID`
+- `APNS_KEY_ID`
+- `APNS_PRIVATE_KEY`
+- `APNS_CUSTOMER_BUNDLE_ID`
+- `APNS_MOMMY_BUNDLE_ID`
 
 ## Step 3: Configure Supabase Staging
 
@@ -180,7 +181,7 @@ What the workflow does on every `main` push:
 - derives the hosted Supabase project ref from `SUPABASE_DB_URL`
 - applies migrations over `SUPABASE_DB_URL`
 - applies `seed.sql`
-- deploys the three edge functions
+- deploys the four edge functions
 - creates the admin auth user if missing
 - forces that profile role to `admin`
 
@@ -251,6 +252,7 @@ supabase db push --db-url "YOUR_SUPABASE_DB_URL" --include-seed --include-all
 supabase functions deploy create-order --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
 supabase functions deploy update-order-status --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
 supabase functions deploy register-device-token --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
+supabase functions deploy delete-account --project-ref YOUR_PRODUCTION_PROJECT_REF --use-api
 
 cd /Users/thomas.gregg/Documents/MommysKitchen/admin-web
 SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co \

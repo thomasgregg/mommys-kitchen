@@ -12,6 +12,7 @@ final class AuthManager: ObservableObject {
     @Published private(set) var state: State = .loading
     @Published private(set) var profile: Profile?
     @Published var errorMessage: String?
+    @Published var accountDeletionMessage: String?
 
     private let supabase: SupabaseService
     private let profileRepository: ProfileRepository
@@ -55,6 +56,7 @@ final class AuthManager: ObservableObject {
     func signIn(email: String, password: String) async {
         do {
             errorMessage = nil
+            accountDeletionMessage = nil
             let session = try await supabase.client.auth.signIn(email: email, password: password)
             await handleSession(session.user)
         } catch {
@@ -65,6 +67,7 @@ final class AuthManager: ObservableObject {
     func signUp(fullName: String, phone: String, email: String, password: String) async {
         do {
             errorMessage = nil
+            accountDeletionMessage = nil
             let metadata: [String: AnyJSON] = [
                 "full_name": .string(fullName),
                 "phone": .string(phone)
@@ -89,6 +92,31 @@ final class AuthManager: ObservableObject {
             try await supabase.client.auth.signOut()
             profile = nil
             state = .signedOut
+            accountDeletionMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func deleteAccount() async {
+        do {
+            errorMessage = nil
+            accountDeletionMessage = nil
+            let _: DeleteAccountResponse = try await supabase.client.functions.invoke(
+                "delete-account",
+                options: .init(),
+                decoder: JSONDecoder.mommysKitchen
+            )
+
+            do {
+                try await supabase.client.auth.signOut()
+            } catch {
+                // Best effort. We still want the app to leave the deleted account state.
+            }
+
+            profile = nil
+            state = .signedOut
+            accountDeletionMessage = "Your account was deleted. Existing order records stay anonymized for kitchen history."
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -116,4 +144,8 @@ final class AuthManager: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
+}
+
+private struct DeleteAccountResponse: Decodable {
+    let deleted: Bool
 }

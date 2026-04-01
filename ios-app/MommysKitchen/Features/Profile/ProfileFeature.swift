@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var appContext: AppContext
     @ObservedObject var authManager: AuthManager
+    @State private var showingDeleteConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -16,6 +17,7 @@ struct ProfileView: View {
                     }
                 }
 
+                #if DEBUG
                 Section("App settings") {
                     NavigationLink {
                         BackendSettingsView(
@@ -30,10 +32,23 @@ struct ProfileView: View {
                         LabeledContent("Backend server", value: appContext.currentBackendName)
                     }
                 }
+                #endif
 
                 Section {
+                    Button("Delete account", role: .destructive) {
+                        showingDeleteConfirmation = true
+                    }
+
                     Button("Sign out", role: .destructive) {
                         Task { await authManager.signOut() }
+                    }
+                }
+
+                if let accountDeletionMessage = authManager.accountDeletionMessage {
+                    Section {
+                        Text(accountDeletionMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -43,6 +58,18 @@ struct ProfileView: View {
             .contentMargins(.bottom, 96, for: .scrollContent)
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            .confirmationDialog(
+                "Delete account?",
+                isPresented: $showingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete account", role: .destructive) {
+                    Task { await authManager.deleteAccount() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This removes your access to the app and deletes your saved contact details. Past order records stay anonymized for kitchen history.")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(KitchenTheme.background.ignoresSafeArea())
@@ -172,8 +199,8 @@ struct BackendSettingsView: View {
                 if appContext.isUsingCustomBackend {
                     Button("Use default server") {
                         errorMessage = nil
-                        appContext.resetToLocalBackend()
-                        selectedMode = .local
+                        appContext.resetToDefaultBackend()
+                        selectedMode = .production
                         serverURL = prefillCustomValues ? AppConfig.currentCustomURLString : ""
                         publishableKey = prefillCustomValues ? AppConfig.currentCustomPublishableKey : ""
                         dismiss()

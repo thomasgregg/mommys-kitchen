@@ -95,7 +95,7 @@ enum AppConfig {
             return .custom
         }
 
-        return .local
+        return .production
     }
 
     static var currentBackend: BackendConfiguration {
@@ -174,7 +174,7 @@ enum AppConfig {
     static func resetCustomBackend() {
         UserDefaults.standard.removeObject(forKey: customSupabaseURLKey)
         UserDefaults.standard.removeObject(forKey: customSupabaseAnonKeyKey)
-        UserDefaults.standard.set(BackendMode.local.rawValue, forKey: backendModeKey)
+        UserDefaults.standard.set(BackendMode.production.rawValue, forKey: backendModeKey)
     }
 
     private static var customConfiguration: BackendConfiguration? {

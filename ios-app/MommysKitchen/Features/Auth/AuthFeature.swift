@@ -124,12 +124,21 @@ struct AuthView: View {
                             .foregroundStyle(.red)
                     }
                 }
+
+                if let accountDeletionMessage = authManager.accountDeletionMessage {
+                    Section {
+                        Text(accountDeletionMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(KitchenTheme.background)
             .navigationTitle("Mommy's Kitchen")
             .navigationBarTitleDisplayMode(.inline)
+            #if DEBUG
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -154,6 +163,7 @@ struct AuthView: View {
                         .environmentObject(appContext)
                 }
             }
+            #endif
             .onChange(of: viewModel.mode) { _, _ in
                 authManager.errorMessage = nil
             }
