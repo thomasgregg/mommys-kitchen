@@ -1,9 +1,7 @@
-import FirebaseCore
-import FirebaseMessaging
+import Combine
 import Foundation
 import UIKit
 import UserNotifications
-import Combine
 
 @MainActor
 final class PushNotificationManager: NSObject, ObservableObject {
@@ -13,7 +11,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
 
     private weak var authManager: AuthManager?
     private var orderRepository: OrderRepository?
-    private var pendingFCMToken: String?
+    private var pendingDeviceToken: String?
     private var authCancellable: AnyCancellable?
 
     private override init() {
@@ -27,14 +25,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
             self?.flushPendingTokenIfNeeded()
         }
 
-        if FirebaseApp.app() == nil,
-           let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-           let options = FirebaseOptions(contentsOfFile: path) {
-            FirebaseApp.configure(options: options)
-        }
-
         UNUserNotificationCenter.current().delegate = self
-        Messaging.messaging().delegate = self
     }
 
     func requestAuthorization() async {
@@ -48,33 +39,35 @@ final class PushNotificationManager: NSObject, ObservableObject {
     }
 
     func didRegisterForRemoteNotifications(deviceToken: Data) {
-        Messaging.messaging().apnsToken = deviceToken
+        let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        registerIfPossible(token: token)
+    }
+
+    func didFailToRegisterForRemoteNotifications(error: Error) {
+        print("Remote notification registration failed: \(error.localizedDescription)")
     }
 
     private func registerIfPossible(token: String) {
-        pendingFCMToken = token
+        pendingDeviceToken = token
         guard authManager?.currentUser != nil, let orderRepository else { return }
         Task {
-            try? await orderRepository.registerDeviceToken(token: token)
+            try? await orderRepository.registerDeviceToken(
+                token: token,
+                appTarget: .customerIOS,
+                pushEnvironment: .current
+            )
         }
     }
 
     private func flushPendingTokenIfNeeded() {
-        guard let pendingFCMToken else { return }
-        registerIfPossible(token: pendingFCMToken)
+        guard let pendingDeviceToken else { return }
+        registerIfPossible(token: pendingDeviceToken)
     }
 
     private func consumeNotification(userInfo: [AnyHashable: Any]) {
         if let rawOrderID = userInfo["order_id"] as? String, let orderID = UUID(uuidString: rawOrderID) {
             lastOpenedOrderID = orderID
         }
-    }
-}
-
-extension PushNotificationManager: MessagingDelegate {
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard let fcmToken else { return }
-        registerIfPossible(token: fcmToken)
     }
 }
 

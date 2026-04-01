@@ -23,6 +23,25 @@ final class AuthViewModel: ObservableObject {
     }
 
     func submit() async {
+        authManager.errorMessage = nil
+
+        switch mode {
+        case .signIn:
+            guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !password.isEmpty else {
+                authManager.errorMessage = "Enter your email and password to sign in."
+                return
+            }
+        case .signUp:
+            guard !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !phone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !password.isEmpty else {
+                authManager.errorMessage = "Fill in your name, phone, email, and password to create an account."
+                return
+            }
+        }
+
         isSubmitting = true
         defer { isSubmitting = false }
 
@@ -124,9 +143,19 @@ struct AuthView: View {
             }
             .sheet(isPresented: $showingBackendSettings) {
                 NavigationStack {
-                    BackendSettingsView(primaryActionTitle: "Save")
+                    BackendSettingsView(
+                        primaryActionTitle: "Save",
+                        showEnvironmentDetails: true,
+                        showCustomHelperText: true,
+                        showLocalDefaultHint: false,
+                        prefillCustomValues: false,
+                        showActionDescription: false
+                    )
                         .environmentObject(appContext)
                 }
+            }
+            .onChange(of: viewModel.mode) { _, _ in
+                authManager.errorMessage = nil
             }
             .safeAreaInset(edge: .bottom) {
                 Button {

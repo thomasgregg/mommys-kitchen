@@ -2,8 +2,10 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { createAdminClient, createUserClient } from "../_shared/supabase.ts";
 
 type RegisterDeviceTokenRequest = {
-  fcm_token: string;
+  device_token: string;
   platform: "ios";
+  app_target: "customer_ios" | "mommy_ios";
+  push_environment: "sandbox" | "production";
 };
 
 Deno.serve(async (request) => {
@@ -26,11 +28,14 @@ Deno.serve(async (request) => {
     }
 
     const body = (await request.json()) as RegisterDeviceTokenRequest;
-    if (!body.fcm_token) {
-      return new Response(JSON.stringify({ error: "FCM token is required." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!body.device_token) {
+      return new Response(
+        JSON.stringify({ error: "APNs device token is required." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const { data, error } = await adminClient
@@ -38,11 +43,13 @@ Deno.serve(async (request) => {
       .upsert(
         {
           user_id: userData.user.id,
-          fcm_token: body.fcm_token,
+          device_token: body.device_token,
           platform: body.platform ?? "ios",
+          app_target: body.app_target ?? "customer_ios",
+          push_environment: body.push_environment ?? "production",
         },
         {
-          onConflict: "fcm_token",
+          onConflict: "device_token,app_target",
         },
       )
       .select()

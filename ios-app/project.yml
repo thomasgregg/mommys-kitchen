@@ -5,9 +5,6 @@ packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift.git
     from: 2.39.0
-  Firebase:
-    url: https://github.com/firebase/firebase-ios-sdk
-    from: 12.11.0
 configs:
   Debug: debug
   Release: release
@@ -45,9 +42,5 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
-      - package: Firebase
-        product: FirebaseCore
-      - package: Firebase
-        product: FirebaseMessaging
     scheme:
       testTargets: []

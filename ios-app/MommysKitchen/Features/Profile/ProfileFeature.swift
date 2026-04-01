@@ -17,7 +17,14 @@ struct ProfileView: View {
 
                 Section("App settings") {
                     NavigationLink {
-                        BackendSettingsView()
+                        BackendSettingsView(
+                            primaryActionTitle: "Save and reconnect",
+                            showEnvironmentDetails: true,
+                            showCustomHelperText: true,
+                            showLocalDefaultHint: false,
+                            prefillCustomValues: false,
+                            showActionDescription: false
+                        )
                     } label: {
                         LabeledContent("Backend server", value: appContext.currentBackendName)
                     }
@@ -45,13 +52,32 @@ struct BackendSettingsView: View {
     @EnvironmentObject private var appContext: AppContext
     @Environment(\.dismiss) private var dismiss
     let primaryActionTitle: String
+    let showEnvironmentDetails: Bool
+    let showCustomHelperText: Bool
+    let showLocalDefaultHint: Bool
+    let prefillCustomValues: Bool
+    let showActionDescription: Bool
     @State private var selectedMode = AppConfig.selectedBackendMode
-    @State private var serverURL = AppConfig.currentCustomURLString
-    @State private var publishableKey = AppConfig.currentCustomPublishableKey
+    @State private var serverURL: String
+    @State private var publishableKey: String
     @State private var errorMessage: String?
 
-    init(primaryActionTitle: String = "Save and reconnect") {
+    init(
+        primaryActionTitle: String = "Save and reconnect",
+        showEnvironmentDetails: Bool = true,
+        showCustomHelperText: Bool = true,
+        showLocalDefaultHint: Bool = true,
+        prefillCustomValues: Bool = true,
+        showActionDescription: Bool = true
+    ) {
         self.primaryActionTitle = primaryActionTitle
+        self.showEnvironmentDetails = showEnvironmentDetails
+        self.showCustomHelperText = showCustomHelperText
+        self.showLocalDefaultHint = showLocalDefaultHint
+        self.prefillCustomValues = prefillCustomValues
+        self.showActionDescription = showActionDescription
+        _serverURL = State(initialValue: prefillCustomValues ? AppConfig.currentCustomURLString : "")
+        _publishableKey = State(initialValue: prefillCustomValues ? AppConfig.currentCustomPublishableKey : "")
     }
 
     var body: some View {
@@ -64,53 +90,63 @@ struct BackendSettingsView: View {
                 }
                 .pickerStyle(.segmented)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    switch selectedMode {
-                    case .local:
-                        Text("Local Supabase")
-                            .font(.body.weight(.medium))
-                        Text(appContext.localSupabaseURL)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    case .production:
-                        Text("Hosted production Supabase")
-                            .font(.body.weight(.medium))
-                        Text(appContext.productionSupabaseURL)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    case .custom:
-                        Text("Custom Supabase project")
-                            .font(.body.weight(.medium))
-                        Text("Use this only if you need a non-standard environment. The URL and publishable key must belong to the same Supabase project.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                if showEnvironmentDetails {
+                    VStack(alignment: .leading, spacing: 8) {
+                        switch selectedMode {
+                        case .local:
+                            Text("Local Supabase")
+                                .font(.body.weight(.medium))
+                            Text(appContext.localSupabaseURL)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        case .production:
+                            Text("Hosted production Supabase")
+                                .font(.body.weight(.medium))
+                            Text(appContext.productionSupabaseURL)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        case .custom:
+                            if showCustomHelperText {
+                                Text("Use this only if you need a non-standard environment. The URL and publishable key must belong to the same Supabase project.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
+                    .padding(.vertical, 4)
                 }
-                .padding(.vertical, 4)
             }
 
             if selectedMode == .custom {
-                Section("Custom Supabase") {
+                Section("Connection details") {
                     TextField("https://your-project.supabase.co", text: $serverURL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                        .foregroundStyle(.primary)
+                        .tint(.primary)
 
                     TextField("sb_publishable_...", text: $publishableKey)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .foregroundStyle(.primary)
+                        .tint(.primary)
 
-                    Text("Local default: \(appContext.localSupabaseURL)")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    if showLocalDefaultHint {
+                        Text("Local default: \(appContext.localSupabaseURL)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
             Section {
-                Text(actionDescription)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 4)
+                if showActionDescription {
+                    Text(actionDescription)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 4)
+                }
 
                 Button(primaryActionTitle) {
                     do {
@@ -137,8 +173,8 @@ struct BackendSettingsView: View {
                         errorMessage = nil
                         appContext.resetToLocalBackend()
                         selectedMode = .local
-                        serverURL = AppConfig.currentCustomURLString
-                        publishableKey = AppConfig.currentCustomPublishableKey
+                        serverURL = prefillCustomValues ? AppConfig.currentCustomURLString : ""
+                        publishableKey = prefillCustomValues ? AppConfig.currentCustomPublishableKey : ""
                         dismiss()
                     }
                     .foregroundStyle(KitchenTheme.accent)

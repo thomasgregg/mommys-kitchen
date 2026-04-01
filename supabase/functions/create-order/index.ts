@@ -1,3 +1,4 @@
+import { sendMommyOrderPlacedPush } from "../_shared/apns.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { createAdminClient, createUserClient } from "../_shared/supabase.ts";
 
@@ -69,6 +70,15 @@ Deno.serve(async (request) => {
 
     if (fetchError) {
       throw fetchError;
+    }
+
+    try {
+      await sendMommyOrderPlacedPush({
+        orderId: fullOrder.id,
+        orderNumber: fullOrder.order_number,
+      });
+    } catch (pushError) {
+      console.error("Push side effect failed after order creation", pushError);
     }
 
     return new Response(JSON.stringify({ order: fullOrder }), {

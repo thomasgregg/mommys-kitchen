@@ -1,4 +1,4 @@
-export const statusNotificationMap = {
+export const customerStatusNotificationMap = {
   accepted: {
     type: "order_accepted",
     title: "Order accepted",
@@ -31,10 +31,17 @@ export const statusNotificationMap = {
   },
 } as const;
 
-export type NotifiableOrderStatus = keyof typeof statusNotificationMap;
+export const mommyOrderPlacedNotification = {
+  type: "order_placed",
+  title: "New order placed",
+  body: (orderNumber: string) =>
+    `${orderNumber} is waiting in the kitchen queue.`,
+} as const;
+
+export type NotifiableOrderStatus = keyof typeof customerStatusNotificationMap;
 
 export function isNotifiableStatus(
   status: string,
 ): status is NotifiableOrderStatus {
-  return status in statusNotificationMap;
+  return status in customerStatusNotificationMap;
 }

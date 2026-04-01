@@ -1,6 +1,24 @@
 import Foundation
 
 struct OrderRepository {
+    enum PushAppTarget: String, Encodable {
+        case customerIOS = "customer_ios"
+        case mommyIOS = "mommy_ios"
+    }
+
+    enum PushEnvironment: String, Encodable {
+        case sandbox
+        case production
+
+        static var current: PushEnvironment {
+            #if DEBUG
+            return .sandbox
+            #else
+            return .production
+            #endif
+        }
+    }
+
     private struct ErrorResponse: Decodable {
         let error: String
     }
@@ -22,8 +40,10 @@ struct OrderRepository {
     }
 
     private struct RegisterDeviceTokenBody: Encodable {
-        let fcmToken: String
+        let deviceToken: String
         let platform: String
+        let appTarget: PushAppTarget
+        let pushEnvironment: PushEnvironment
     }
 
     let supabase: SupabaseService
@@ -65,8 +85,17 @@ struct OrderRepository {
         try validate(response: response, data: data)
     }
 
-    func registerDeviceToken(token: String) async throws {
-        let body = RegisterDeviceTokenBody(fcmToken: token, platform: "ios")
+    func registerDeviceToken(
+        token: String,
+        appTarget: PushAppTarget,
+        pushEnvironment: PushEnvironment
+    ) async throws {
+        let body = RegisterDeviceTokenBody(
+            deviceToken: token,
+            platform: "ios",
+            appTarget: appTarget,
+            pushEnvironment: pushEnvironment
+        )
         let request = try await supabase.authorizedFunctionRequest(path: "register-device-token", body: body)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validate(response: response, data: data)

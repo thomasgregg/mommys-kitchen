@@ -1,5 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { sendOrderPush } from "../_shared/fcm.ts";
+import { sendCustomerOrderStatusPush } from "../_shared/apns.ts";
 import { createAdminClient, createUserClient } from "../_shared/supabase.ts";
 
 type UpdateOrderStatusRequest = {
@@ -68,7 +68,7 @@ Deno.serve(async (request) => {
         .includes(updatedOrder.status)
     ) {
       try {
-        await sendOrderPush({
+        await sendCustomerOrderStatusPush({
           userId: updatedOrder.user_id,
           orderId: updatedOrder.id,
           status: updatedOrder.status,

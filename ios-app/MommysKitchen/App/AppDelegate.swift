@@ -15,6 +15,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         }
     }
 
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        Task { @MainActor in
+            PushNotificationManager.shared.didFailToRegisterForRemoteNotifications(error: error)
+        }
+    }
+
     func applicationDidBecomeActive(_ application: UIApplication) {
         applyWindowBackgrounds(for: application)
     }
