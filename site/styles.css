@@ -47,12 +47,25 @@ a {
   padding: 36px;
 }
 
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 18px;
   font-weight: 700;
+}
+
+.hero-top .brand {
+  margin-bottom: 0;
 }
 
 .brand-mark {
@@ -109,7 +122,6 @@ li {
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  margin-bottom: 16px;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.04em;
