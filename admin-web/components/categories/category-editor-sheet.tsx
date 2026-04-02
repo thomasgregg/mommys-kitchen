@@ -1,6 +1,7 @@
 "use client";
 
 import { PencilLine, Plus } from "lucide-react";
+import { useState } from "react";
 import { CategoryForm } from "@/components/categories/category-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +22,10 @@ export function CategoryEditorSheet({
   iconOnly?: boolean;
 }) {
   const isEditing = Boolean(category);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button
@@ -44,7 +46,12 @@ export function CategoryEditorSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4">
-          <CategoryForm category={category} variant="plain" submitLabel={isEditing ? "Save changes" : "Create category"} />
+          <CategoryForm
+            category={category}
+            variant="plain"
+            submitLabel={isEditing ? "Save changes" : "Create category"}
+            onSuccess={() => setOpen(false)}
+          />
         </div>
       </SheetContent>
     </Sheet>

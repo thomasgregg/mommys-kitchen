@@ -1,6 +1,7 @@
 "use client";
 
 import { PencilLine, Plus } from "lucide-react";
+import { useState } from "react";
 import { MenuItemForm } from "@/components/menu/menu-item-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +26,10 @@ export function MenuItemSheet({
   iconOnly?: boolean;
 }) {
   const isEditing = Boolean(item);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button
@@ -54,6 +56,7 @@ export function MenuItemSheet({
             settings={settings}
             variant="plain"
             submitLabel={isEditing ? "Save changes" : "Create item"}
+            onSuccess={() => setOpen(false)}
           />
         </div>
       </SheetContent>

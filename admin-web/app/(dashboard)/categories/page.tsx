@@ -6,6 +6,7 @@ import { StatusFilterChip } from "@/components/orders/status-filter-chip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmSubmitAction } from "@/components/ui/confirm-submit-action";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
   Table,
@@ -153,14 +154,23 @@ export default async function CategoriesPage({
                     <TableCell>
                       <div className="flex justify-end gap-2">
                         <CategoryEditorSheet category={category} iconOnly />
+                        <ConfirmSubmitAction
+                          title="Delete category?"
+                          description={
+                            category.linkedItems > 0
+                              ? "Move or remove linked menu items before deleting this category."
+                              : `This permanently removes ${category.name} from the menu structure.`
+                          }
+                          confirmLabel="Delete category"
+                          action={deleteMenuCategoryAction}
+                          values={{ id: category.id }}
+                          triggerLabel="Delete"
+                          disabled={category.linkedItems > 0}
+                        />
                         <form action={toggleMenuCategoryAction}>
                           <input type="hidden" name="id" value={category.id} />
                           <input type="hidden" name="isActive" value={String(category.is_active)} />
                           <SubmitButton label={category.is_active ? "Hide" : "Show"} variant="outline" size="sm" />
-                        </form>
-                        <form action={deleteMenuCategoryAction}>
-                          <input type="hidden" name="id" value={category.id} />
-                          <SubmitButton label="Delete" variant="destructive" size="sm" disabled={category.linkedItems > 0} />
                         </form>
                       </div>
                     </TableCell>

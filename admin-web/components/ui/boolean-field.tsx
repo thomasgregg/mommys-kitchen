@@ -25,12 +25,12 @@ export function BooleanField({
     <label
       className={cn(
         "flex items-center justify-between gap-4 rounded-xl border border-border/70 bg-background px-4 py-3.5",
-        compact && "rounded-xl border border-border/70 bg-white px-4 py-3.5",
+        compact && "rounded-xl border border-border/70 bg-white px-4 py-3",
         className
       )}
     >
       <input type="hidden" name={name} value={checked ? "on" : ""} />
-      <div className="min-w-0 flex-1 space-y-1.5">
+      <div className={cn("min-w-0 flex-1 space-y-1.5", compact && "space-y-1")}>
         <span className="block text-sm font-medium text-foreground">{label}</span>
         {description ? <span className="block text-sm text-muted-foreground">{description}</span> : null}
       </div>

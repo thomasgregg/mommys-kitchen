@@ -6,6 +6,7 @@ import { StatusFilterChip } from "@/components/orders/status-filter-chip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmSubmitAction } from "@/components/ui/confirm-submit-action";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
   Table,
@@ -16,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UrlSelectFilter } from "@/components/ui/url-select-filter";
-import { toggleMenuAvailabilityAction } from "@/lib/actions/menu";
+import { deleteMenuItemAction, toggleMenuAvailabilityAction } from "@/lib/actions/menu";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAppSettings } from "@/lib/data/app-settings";
 import type { MenuCategory, MenuItem } from "@/lib/types/app";
@@ -138,7 +139,7 @@ export default async function MenuPage({
       <Card className="border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/70">
           <CardTitle>Live menu items</CardTitle>
-          <CardDescription>Add or update menu photos with the image URL field for now.</CardDescription>
+          <CardDescription>Preview, upload, replace, or remove menu items directly from the admin table.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {filteredItems.length === 0 ? (
@@ -181,7 +182,11 @@ export default async function MenuPage({
                     <TableCell className="text-sm text-muted-foreground">{item.prep_minutes} min</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1.5">
-                        {item.is_featured ? <Badge variant="secondary">Featured</Badge> : null}
+                        {item.is_featured ? (
+                          <Badge variant="outline" className="rounded-full">
+                            Featured
+                          </Badge>
+                        ) : null}
                         {!item.is_featured ? <span className="text-sm text-muted-foreground">—</span> : null}
                       </div>
                     </TableCell>
@@ -191,12 +196,20 @@ export default async function MenuPage({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-2">
+                      <div className="grid grid-cols-[auto_auto_7.5rem] items-center justify-end gap-2">
                         <MenuItemSheet
                           categories={categories ?? []}
                           item={item}
                           settings={settings}
                           iconOnly
+                        />
+                        <ConfirmSubmitAction
+                          title="Delete menu item?"
+                          description={`This removes ${item.name} from the live menu. Past orders will keep their item snapshot.`}
+                          confirmLabel="Delete menu item"
+                          action={deleteMenuItemAction}
+                          values={{ id: item.id }}
+                          triggerLabel="Delete"
                         />
                         <form action={toggleMenuAvailabilityAction}>
                           <input type="hidden" name="id" value={item.id} />
@@ -205,6 +218,7 @@ export default async function MenuPage({
                             label={item.is_available ? "Sold out" : "Restore"}
                             variant="outline"
                             size="sm"
+                            className="w-full justify-center"
                           />
                         </form>
                       </div>

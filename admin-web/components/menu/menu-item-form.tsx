@@ -1,9 +1,14 @@
+"use client";
+
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { BooleanField } from "@/components/ui/boolean-field";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
-import { upsertMenuItemAction } from "@/lib/actions/menu";
+import { MenuPhotoField } from "@/components/menu/menu-photo-field";
+import { submitMenuItemAction } from "@/lib/actions/menu";
 import type { AppSettings, MenuCategory, MenuItem } from "@/lib/types/app";
 import { cn } from "@/lib/utils";
 
@@ -13,35 +18,58 @@ export function MenuItemForm({
   settings,
   variant = "card",
   submitLabel,
+  onSuccess,
 }: {
   categories: MenuCategory[];
   item?: MenuItem;
   settings: Pick<AppSettings, "currency_code" | "locale_identifier">;
   variant?: "card" | "plain";
   submitLabel?: string;
+  onSuccess?: () => void;
 }) {
   const compact = variant === "plain";
+  const fieldSpacing = compact ? "grid gap-2.5" : "space-y-4";
   const priceLabel = `Price (${settings.currency_code})`;
   const priceValue = formatPriceInputValue(item?.price_cents ?? 0, settings.locale_identifier);
+  const [state, formAction] = useActionState(submitMenuItemAction, null);
+  const handledStateRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state) {
+      return;
+    }
+
+    const stateKey = `${state.status}:${state.message}`;
+    if (handledStateRef.current === stateKey) {
+      return;
+    }
+    handledStateRef.current = stateKey;
+
+    if (state.status === "success") {
+      toast.success(state.message);
+      onSuccess?.();
+    } else {
+      toast.error(state.message);
+    }
+  }, [onSuccess, state]);
 
   return (
     <form
-      action={upsertMenuItemAction}
+      action={formAction}
       className={cn(
-        "grid gap-4",
-        compact && "sm:grid-cols-2 sm:items-start",
-        !compact && "md:grid-cols-2",
+        "grid",
+        compact ? "gap-3 sm:grid-cols-2 sm:items-start" : "gap-4 md:grid-cols-2",
         variant === "card" && "rounded-3xl border border-border/70 bg-card/90 p-6 shadow-[0_16px_40px_rgba(57,39,24,0.06)]"
       )}
     >
       <input type="hidden" name="id" defaultValue={item?.id ?? ""} />
 
-      <label className="space-y-4">
+      <label className={fieldSpacing}>
         <span className="text-sm font-medium text-foreground">Name</span>
         <Input name="name" required defaultValue={item?.name ?? ""} className="h-9 rounded-xl bg-background" />
       </label>
 
-      <label className="space-y-4">
+      <label className={fieldSpacing}>
         <span className="text-sm font-medium text-foreground">Category</span>
         <SelectField
           name="categoryId"
@@ -52,17 +80,12 @@ export function MenuItemForm({
         />
       </label>
 
-      <label className={cn("space-y-4", compact && "sm:col-span-2", !compact && "md:col-span-2")}>
+      <label className={cn(fieldSpacing, compact && "sm:col-span-2", !compact && "md:col-span-2")}>
         <span className="text-sm font-medium text-foreground">Description</span>
         <Textarea name="description" rows={4} required defaultValue={item?.description ?? ""} className="rounded-xl bg-background" />
       </label>
 
-      <label className={cn("space-y-4", compact && "sm:col-span-2", !compact && "md:col-span-2")}>
-        <span className="text-sm font-medium text-foreground">Image URL</span>
-        <Input name="imageUrl" type="url" defaultValue={item?.image_url ?? ""} className="h-10 rounded-xl bg-background" />
-      </label>
-
-      <label className="space-y-4">
+      <label className={fieldSpacing}>
         <span className="text-sm font-medium text-foreground">{priceLabel}</span>
         <Input
           name="price"
@@ -75,10 +98,12 @@ export function MenuItemForm({
         />
       </label>
 
-      <label className="space-y-4">
+      <label className={fieldSpacing}>
         <span className="text-sm font-medium text-foreground">Prep minutes</span>
         <Input name="prepMinutes" type="number" min="0" required defaultValue={item?.prep_minutes ?? 0} className="h-9 rounded-xl bg-background" />
       </label>
+
+      <MenuPhotoField initialImageUrl={item?.image_url} compact={compact} />
 
       <BooleanField
         name="isAvailable"
@@ -98,7 +123,7 @@ export function MenuItemForm({
         className={cn(compact && "sm:col-span-2")}
       />
 
-      <div className={cn("flex justify-end border-t border-border/60 pt-3", compact && "sm:col-span-2", !compact && "md:col-span-2")}>
+      <div className={cn("flex justify-end border-t border-border/60", compact ? "pt-2.5 sm:col-span-2" : "pt-3 md:col-span-2")}>
         <SubmitButton
           label={submitLabel ?? (item ? "Save item" : "Create item")}
           variant="outline"

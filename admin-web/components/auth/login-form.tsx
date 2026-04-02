@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -7,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { signInAction } from "@/lib/actions/auth";
 
 export function LoginForm({ error }: { error?: string }) {
+  const formRef = useRef<HTMLFormElement>(null);
+
   return (
     <Card className="mx-auto w-full max-w-lg border-border/80 bg-card shadow-sm">
       <CardHeader className="gap-3 border-b border-border/70 px-5 py-6 text-center">
@@ -20,7 +25,17 @@ export function LoginForm({ error }: { error?: string }) {
       </CardHeader>
 
       <CardContent className="px-5 py-6">
-        <form action={signInAction} className="flex flex-col gap-4">
+        <form
+          ref={formRef}
+          action={signInAction}
+          className="flex flex-col gap-4"
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              formRef.current?.requestSubmit();
+            }
+          }}
+        >
           <div className="flex flex-col gap-2.5">
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               Email

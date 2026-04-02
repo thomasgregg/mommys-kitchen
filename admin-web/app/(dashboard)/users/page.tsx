@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmSubmitAction } from "@/components/ui/confirm-submit-action";
 import {
   Table,
   TableBody,
@@ -15,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { deleteUserAction } from "@/lib/actions/users";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { OrderRecord, Profile } from "@/lib/types/app";
@@ -63,7 +65,7 @@ export default async function UsersPage({
   searchParams: Promise<{ q?: string; role?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase } = await requireAdmin();
+  const { supabase, user: currentUser } = await requireAdmin();
 
   const [{ data: profiles, error: profilesError }, { data: orders, error: ordersError }, authUsers] = await Promise.all([
     supabase
@@ -209,7 +211,7 @@ export default async function UsersPage({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
                         <Button
                           render={<Link href={"/users/" + user.id} />}
                           nativeButton={false}
@@ -220,6 +222,19 @@ export default async function UsersPage({
                         >
                           <PencilLine className="size-4" />
                         </Button>
+                        <ConfirmSubmitAction
+                          title="Delete user?"
+                          description={
+                            user.id === currentUser.id
+                              ? "You can't delete the account you're currently signed in with."
+                              : "This removes sign-in access, device tokens, and notifications. Past orders stay anonymized."
+                          }
+                          confirmLabel="Delete user"
+                          action={deleteUserAction}
+                          values={{ id: user.id }}
+                          triggerLabel="Delete"
+                          disabled={user.id === currentUser.id}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

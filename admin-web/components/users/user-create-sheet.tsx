@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import { UserCreateForm } from "@/components/users/user-create-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +18,10 @@ export function UserCreateSheet() {
 }
 
 export function UserCreateSheetContent({ disabled = false }: { disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button variant="outline" size="lg" className="rounded-xl" disabled={disabled}>
@@ -33,7 +36,7 @@ export function UserCreateSheetContent({ disabled = false }: { disabled?: boolea
           <SheetDescription className="sr-only">Create a new customer or admin account.</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4">
-          <UserCreateForm />
+          <UserCreateForm onSuccess={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>
