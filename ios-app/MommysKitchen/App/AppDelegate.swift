@@ -31,7 +31,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     private func configureAppearance() {
-        let accentColor = UIColor(red: 0.82, green: 0.43, blue: 0.26, alpha: 1)
+        let accentColor = isKitchenAdminApp
+            ? UIColor(red: 44 / 255, green: 54 / 255, blue: 70 / 255, alpha: 1)
+            : UIColor(red: 0.82, green: 0.43, blue: 0.26, alpha: 1)
         let navigationAppearance = UINavigationBarAppearance()
         navigationAppearance.configureWithOpaqueBackground()
         navigationAppearance.backgroundColor = .systemGroupedBackground
@@ -53,6 +55,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
         UITabBar.appearance().tintColor = accentColor
+    }
+
+    private var isKitchenAdminApp: Bool {
+        Bundle.main.bundleIdentifier == "com.mommyskitchen.mommy"
     }
 
     private func applyWindowBackgrounds(for application: UIApplication) {

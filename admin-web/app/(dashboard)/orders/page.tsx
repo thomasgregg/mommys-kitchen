@@ -141,7 +141,7 @@ export default async function OrdersQueuePage({
 
       <Card className="border-border/70 bg-card shadow-sm">
         <CardHeader className="gap-1 border-b border-border/70">
-          <CardTitle>Kitchen queue</CardTitle>
+          <CardTitle>Current Orders</CardTitle>
           <CardDescription>
             The database owns the state machine. These controls just advance it. Completed orders leave Current Orders
             and move to order history.

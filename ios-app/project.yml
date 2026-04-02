@@ -60,7 +60,6 @@ targets:
       - path: MommysKitchen/Core
       - path: MommysKitchen/UI
       - path: MommysKitchen/Resources/Assets.xcassets
-      - path: MommysKitchen/Resources/LaunchScreen.storyboard
       - path: MommysKitchenChef
     configFiles:
       Debug: Configs/Debug.xcconfig
@@ -68,7 +67,8 @@ targets:
     info:
       path: MommysKitchenChef/Resources/Info.plist
       properties:
-        UILaunchStoryboardName: LaunchScreen
+        CFBundleDisplayName: Kitchen Admin
+        UILaunchStoryboardName: KitchenAdminLaunchScreen
         UIApplicationSupportsIndirectInputEvents: true
         UIBackgroundModes:
           - remote-notification
@@ -80,11 +80,11 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mommyskitchen.mommy
-        PRODUCT_NAME: Mommy's Kitchen Chef
+        PRODUCT_NAME: Kitchen Admin
         TARGETED_DEVICE_FAMILY: 1
         DEVELOPMENT_TEAM: "BB4MFJBDC7"
         CODE_SIGN_STYLE: Automatic
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIconChef
         SWIFT_STRICT_CONCURRENCY: complete
         CURRENT_PROJECT_VERSION: 1
         MARKETING_VERSION: 1.0.0

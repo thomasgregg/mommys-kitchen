@@ -100,10 +100,10 @@ struct ChefOrdersView: View {
                         }
                     }
                 } else {
-                    ChefQueueSection(title: "New orders", orders: queueOrders(for: .placed), navigationPath: $navigationPath)
-                    ChefQueueSection(title: "Accepted", orders: queueOrders(for: .accepted), navigationPath: $navigationPath)
-                    ChefQueueSection(title: "Preparing", orders: queueOrders(for: .preparing), navigationPath: $navigationPath)
-                    ChefQueueSection(title: "Ready for delivery", orders: queueOrders(for: .ready), navigationPath: $navigationPath)
+                    ChefQueueSection(title: "New orders", orders: queueOrders(for: .placed))
+                    ChefQueueSection(title: "Accepted", orders: queueOrders(for: .accepted))
+                    ChefQueueSection(title: "Preparing", orders: queueOrders(for: .preparing))
+                    ChefQueueSection(title: "Ready for delivery", orders: queueOrders(for: .ready))
                 }
             }
             .listStyle(.plain)
@@ -186,18 +186,14 @@ struct ChefHistoryView: View {
 private struct ChefQueueSection: View {
     let title: String
     let orders: [KitchenOrderRecord]
-    @Binding var navigationPath: [UUID]
 
     var body: some View {
         if !orders.isEmpty {
             Section(title) {
                 ForEach(orders) { record in
-                    Button {
-                        navigationPath = [record.id]
-                    } label: {
+                    NavigationLink(value: record.id) {
                         ChefQueueCard(record: record)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -236,7 +232,7 @@ private struct ChefQueueCard: View {
                     .lineLimit(2)
             }
         }
-        .kitchenCard()
+        .padding(.vertical, 6)
     }
 }
 

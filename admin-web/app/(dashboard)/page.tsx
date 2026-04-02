@@ -166,7 +166,7 @@ export default async function DashboardPage({
               <CardDescription>Recent active orders across all in-progress states.</CardDescription>
               <CardAction>
                 <Button render={<Link href="/orders" />} nativeButton={false} variant="ghost" size="sm">
-                  Open queue
+                  Open Current Orders
                 </Button>
               </CardAction>
             </CardHeader>

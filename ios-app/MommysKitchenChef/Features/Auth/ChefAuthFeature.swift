@@ -44,7 +44,7 @@ struct ChefAuthView: View {
             List {
                 Section {
                     VStack(spacing: 14) {
-                        Image("BrandMark")
+                        Image("BrandMarkChef")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 68, height: 68)
@@ -52,7 +52,7 @@ struct ChefAuthView: View {
                             .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
 
                         VStack(spacing: 8) {
-                            Text("Mommy's Kitchen Chef")
+                            Text("Kitchen Admin")
                                 .font(.title2.weight(.bold))
                                 .multilineTextAlignment(.center)
                             Text("Check new orders, move them through the kitchen, and keep the family delivery flow calm.")
@@ -88,7 +88,7 @@ struct ChefAuthView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(KitchenTheme.background)
-            .navigationTitle("Mommy's Kitchen Chef")
+            .navigationTitle("Kitchen Admin")
             .navigationBarTitleDisplayMode(.inline)
             #if DEBUG
             .toolbar {
