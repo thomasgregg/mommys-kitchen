@@ -34,10 +34,9 @@ final class AuthViewModel: ObservableObject {
             }
         case .signUp:
             guard !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !phone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                   !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                   !password.isEmpty else {
-                authManager.errorMessage = "Fill in your name, phone, email, and password to create an account."
+                authManager.errorMessage = "Fill in your name, email, and password to create an account."
                 return
             }
         }

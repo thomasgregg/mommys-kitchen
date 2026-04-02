@@ -74,10 +74,13 @@ final class AuthManager: ObservableObject {
         do {
             errorMessage = nil
             accountDeletionMessage = nil
-            let metadata: [String: AnyJSON] = [
-                "full_name": .string(fullName),
-                "phone": .string(phone)
+            var metadata: [String: AnyJSON] = [
+                "full_name": .string(fullName)
             ]
+            let trimmedPhone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedPhone.isEmpty {
+                metadata["phone"] = .string(trimmedPhone)
+            }
             let response = try await supabase.client.auth.signUp(email: email, password: password, data: metadata)
             if let session = response.session {
                 _ = session

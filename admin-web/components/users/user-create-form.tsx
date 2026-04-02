@@ -16,7 +16,7 @@ export function UserCreateForm() {
             name="email"
             type="email"
             required
-            placeholder="child@example.com"
+            placeholder="example@example.com"
             className="h-9 rounded-xl bg-background"
           />
         </label>
@@ -35,7 +35,7 @@ export function UserCreateForm() {
 
         <label className="grid gap-4">
           <span className="text-sm font-medium text-foreground">Full name</span>
-          <Input name="fullName" placeholder="Thomas" className="h-9 rounded-xl bg-background" />
+          <Input name="fullName" placeholder="Peter" className="h-9 rounded-xl bg-background" />
         </label>
 
         <label className="grid gap-4">
@@ -54,10 +54,7 @@ export function UserCreateForm() {
         </label>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-border/70 pt-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          The auth account is created immediately. Notifications only start once the user signs into an iPhone app.
-        </p>
+      <div className="flex justify-end border-t border-border/70 pt-3">
         <SubmitButton label="Create user" variant="outline" size="lg" className="h-10 min-w-44 rounded-xl px-5" />
       </div>
     </form>
