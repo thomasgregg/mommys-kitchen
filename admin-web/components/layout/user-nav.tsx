@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { LogOut, UserRound } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -15,8 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOutAction } from "@/lib/actions/auth";
 import type { Profile } from "@/lib/types/app";
-import { cn } from "@/lib/utils";
-import { roleBadgeClass } from "@/lib/utils/admin-ui";
 
 export function UserNav({ profile }: { profile: Profile }) {
   const initials = getInitials(profile.full_name);
@@ -32,22 +29,7 @@ export function UserNav({ profile }: { profile: Profile }) {
           </Button>
         }
       />
-      <DropdownMenuContent align="end" className="w-64 min-w-64 bg-white">
-        <div className="rounded-xl bg-white p-3">
-          <div className="flex items-center gap-3">
-            <Avatar size="lg" className="bg-white shadow-sm">
-              <AvatarFallback className="bg-white font-semibold text-foreground">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{profile.full_name ?? "Kitchen Admin"}</p>
-              <p className="truncate text-sm text-muted-foreground">{profile.phone ?? "Staff account"}</p>
-            </div>
-            <Badge variant="outline" className={cn("border", roleBadgeClass(profile.role))}>
-              {profile.role}
-            </Badge>
-          </div>
-        </div>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-56 min-w-56 bg-white">
         <DropdownMenuGroup className="px-1.5 py-1">
           <DropdownMenuItem render={<Link href={`/users/${profile.id}`} />}>
             <UserRound />
@@ -63,7 +45,6 @@ export function UserNav({ profile }: { profile: Profile }) {
             </button>
           </form>
         </DropdownMenuGroup>
-        <div className="pb-1" />
       </DropdownMenuContent>
     </DropdownMenu>
   );
