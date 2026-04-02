@@ -1,6 +1,6 @@
 import Foundation
 
-struct Profile: Codable, Identifiable, Sendable {
+struct Profile: Codable, Identifiable, Hashable, Sendable {
     enum Role: String, Codable, Sendable {
         case customer
         case admin

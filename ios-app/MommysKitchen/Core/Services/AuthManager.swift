@@ -17,16 +17,22 @@ final class AuthManager: ObservableObject {
     private let supabase: SupabaseService
     private let profileRepository: ProfileRepository
     private let appSettingsStore: AppSettingsStore
+    private let requiredRole: Profile.Role?
+    private let roleMismatchMessage: String?
     private var authTask: Task<Void, Never>?
 
     init(
         supabase: SupabaseService,
         profileRepository: ProfileRepository,
-        appSettingsStore: AppSettingsStore
+        appSettingsStore: AppSettingsStore,
+        requiredRole: Profile.Role? = nil,
+        roleMismatchMessage: String? = nil
     ) {
         self.supabase = supabase
         self.profileRepository = profileRepository
         self.appSettingsStore = appSettingsStore
+        self.requiredRole = requiredRole
+        self.roleMismatchMessage = roleMismatchMessage
     }
 
     func start() {
@@ -138,8 +144,16 @@ final class AuthManager: ObservableObject {
         do {
             async let profileRequest = profileRepository.fetchCurrentProfile(userID: user.id)
             async let settingsRequest = appSettingsStore.refresh()
-            profile = try await profileRequest
+            let fetchedProfile = try await profileRequest
             _ = await settingsRequest
+            if let requiredRole, fetchedProfile.role != requiredRole {
+                profile = nil
+                state = .signedOut
+                errorMessage = roleMismatchMessage ?? "This account doesn’t have access to this app."
+                try? await supabase.client.auth.signOut()
+                return
+            }
+            profile = fetchedProfile
         } catch {
             errorMessage = error.localizedDescription
         }

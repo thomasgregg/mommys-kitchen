@@ -13,15 +13,21 @@ final class PushNotificationManager: NSObject, ObservableObject {
     private var orderRepository: OrderRepository?
     private var pendingDeviceToken: String?
     private var authCancellable: AnyCancellable?
+    private var appTarget: OrderRepository.PushAppTarget = .customerIOS
 
     private override init() {
         super.init()
         UNUserNotificationCenter.current().delegate = self
     }
 
-    func configure(authManager: AuthManager, orderRepository: OrderRepository) {
+    func configure(
+        authManager: AuthManager,
+        orderRepository: OrderRepository,
+        appTarget: OrderRepository.PushAppTarget = .customerIOS
+    ) {
         self.authManager = authManager
         self.orderRepository = orderRepository
+        self.appTarget = appTarget
         authCancellable = authManager.$state.sink { [weak self] _ in
             self?.flushPendingTokenIfNeeded()
         }
@@ -53,7 +59,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
         Task {
             try? await orderRepository.registerDeviceToken(
                 token: token,
-                appTarget: .customerIOS,
+                appTarget: appTarget,
                 pushEnvironment: .current
             )
         }

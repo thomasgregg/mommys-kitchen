@@ -92,6 +92,7 @@ jobs:
         working-directory: supabase
         run: |
           supabase functions deploy create-order --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
+          supabase functions deploy list-kitchen-orders --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
           supabase functions deploy update-order-status --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
           supabase functions deploy register-device-token --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api
           supabase functions deploy delete-account --project-ref "${{ steps.supabase.outputs.project_ref }}" --use-api

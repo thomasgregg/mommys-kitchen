@@ -60,3 +60,6 @@ verify_jwt = false
 
 [functions.delete-account]
 verify_jwt = false
+
+[functions.list-kitchen-orders]
+verify_jwt = false

@@ -15,7 +15,7 @@ This repo contains:
 - Every important action writes to Postgres first.
 - The iOS app reads backend state directly and never trusts push payloads as business state.
 - Order creation and status transitions happen through edge functions, not direct client table writes.
-- Push is FCM -> APNs for delivery, with notifications logged in the `notifications` table.
+- Push is sent directly through APNs, with notification attempts logged in the `notifications` table.
 
 ### Backend shape
 - Supabase Auth handles customer and admin authentication.
@@ -133,10 +133,11 @@ This repo contains:
     ├── functions
     │   ├── _shared
     │   │   ├── cors.ts
-    │   │   ├── fcm.ts
+    │   │   ├── apns.ts
     │   │   ├── orders.ts
     │   │   └── supabase.ts
     │   ├── create-order/index.ts
+    │   ├── delete-account/index.ts
     │   ├── register-device-token/index.ts
     │   └── update-order-status/index.ts
     ├── migrations
@@ -232,38 +233,43 @@ xcodegen generate
 
 Then open `ios-app/MommysKitchen.xcodeproj` in Xcode.
 
-## Firebase Cloud Messaging for iOS
+## Apple Push Notifications (APNs)
 
-### In Firebase
-1. Create a Firebase project.
-2. Add an iOS app with your bundle identifier from `ios-app/project.yml`.
-3. Download `GoogleService-Info.plist`.
-4. Place it at:
+### Apple Developer setup
+1. Create an App ID for the customer app bundle identifier:
+   - `com.mommyskitchen.app`
+2. Enable:
+   - `Push Notifications`
+3. Create an APNs Auth Key (`.p8`) in Apple Developer.
+4. Keep:
+   - `Team ID`
+   - `Key ID`
+   - the full `.p8` private key contents
 
-```text
-ios-app/GoogleService-Info.plist
-```
+### iOS app setup
+The iOS target uses native APNs delivery and expects:
+- `Push Notifications`
+- `aps-environment`
+- `Background Modes -> Remote notifications`
 
-The app will run without it, but Firebase push registration will stay inactive until the file is present.
+For local development with XcodeGen:
+- `ios-app/project.yml` configures the target capabilities
+- `ios-app/MommysKitchen/Resources/MommysKitchen.entitlements` carries the APNs entitlement
 
-### APNs setup
-1. In Apple Developer, create or use an APNs Auth Key.
-2. Upload the APNs key to Firebase Cloud Messaging for the iOS app.
-3. Enable Push Notifications for the iOS target in your Apple provisioning setup.
-4. Confirm the app entitlements include `aps-environment`.
-
-### Supabase secrets for server-side FCM sending
+### Supabase secrets for server-side APNs sending
 
 Set these in Supabase for the edge functions:
 
 ```bash
 supabase secrets set \
-  FIREBASE_PROJECT_ID=your-firebase-project-id \
-  FIREBASE_CLIENT_EMAIL=your-service-account-email \
-  FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+  APNS_TEAM_ID=your-apple-team-id \
+  APNS_KEY_ID=your-apns-key-id \
+  APNS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n" \
+  APNS_CUSTOMER_BUNDLE_ID=com.mommyskitchen.app \
+  APNS_MOMMY_BUNDLE_ID=com.mommyskitchen.mommy
 ```
 
-These are used by `supabase/functions/_shared/fcm.ts` to call the FCM HTTP v1 API.
+These are used by `supabase/functions/_shared/apns.ts` to call Apple Push Notification service directly.
 
 ## Running the System
 
@@ -273,6 +279,7 @@ From `supabase/`:
 
 ```bash
 supabase functions serve create-order --no-verify-jwt
+supabase functions serve delete-account --no-verify-jwt
 supabase functions serve update-order-status --no-verify-jwt
 supabase functions serve register-device-token --no-verify-jwt
 ```
@@ -284,6 +291,7 @@ For real authenticated local testing, prefer the normal `supabase start` stack a
 ```bash
 cd supabase
 supabase functions deploy create-order
+supabase functions deploy delete-account
 supabase functions deploy update-order-status
 supabase functions deploy register-device-token
 ```
@@ -298,9 +306,8 @@ supabase db push
 
 - Supabase URL / anon key for iOS: `ios-app/Configs/*.xcconfig`
 - Supabase URL / anon key for admin web: `admin-web/.env.local`
-- Firebase iOS client config: `ios-app/GoogleService-Info.plist`
-- Firebase service account secrets for push sending: Supabase project secrets
-- Apple APNs credentials: Apple Developer + Firebase console
+- APNs secrets for push sending: Supabase Edge Function secrets
+- Apple app signing and APNs key: Apple Developer
 
 ## Order State Machine
 
