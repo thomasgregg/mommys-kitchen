@@ -77,8 +77,8 @@ final class ChefAppContext: ObservableObject {
         rebuildForServerChange()
     }
 
-    func updateCustomBackend(urlString: String, publishableKey: String) throws {
-        try AppConfig.saveCustomBackend(url: urlString, publishableKey: publishableKey)
+    func updateCustomBackend(urlString: String, anonKey: String) throws {
+        try AppConfig.saveCustomBackend(url: urlString, anonKey: anonKey)
         rebuildForServerChange()
     }
 

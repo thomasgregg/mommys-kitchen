@@ -222,7 +222,7 @@ private struct ChefQueueCard: View {
                         .foregroundStyle(KitchenTheme.muted)
                 }
                 Spacer()
-                OrderStatusBadge(status: record.order.status)
+                ChefOrderStatusBadge(status: record.order.status)
             }
 
             Text(record.order.orderItems.map { "\($0.quantity)x \($0.itemNameSnapshot)" }.joined(separator: ", "))
@@ -256,7 +256,7 @@ private struct ChefHistoryRow: View {
                     .foregroundStyle(KitchenTheme.muted)
             }
             Spacer()
-            OrderStatusBadge(status: record.order.status)
+            ChefOrderStatusBadge(status: record.order.status)
         }
         .padding(.vertical, 4)
     }
@@ -291,7 +291,7 @@ private struct ChefOrderDetailView: View {
                                         .foregroundStyle(KitchenTheme.muted)
                                 }
                                 Spacer()
-                                OrderStatusBadge(status: record.order.status)
+                                ChefOrderStatusBadge(status: record.order.status)
                             }
 
                             if let phone = record.customer?.phone, !phone.isEmpty {
@@ -423,6 +423,75 @@ private struct ChefTimelineRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+private struct ChefOrderStatusBadge: View {
+    let status: OrderStatus
+
+    var body: some View {
+        let style = style(for: status)
+
+        Text(status.title)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(style.text)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 7)
+            .background(
+                Capsule()
+                    .fill(style.background)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(style.border, lineWidth: 1)
+            )
+    }
+
+    private func style(for status: OrderStatus) -> BadgeStyle {
+        switch status {
+        case .placed:
+            return BadgeStyle(
+                text: Color(red: 146 / 255, green: 64 / 255, blue: 14 / 255),
+                background: Color(red: 255 / 255, green: 251 / 255, blue: 235 / 255),
+                border: Color(red: 253 / 255, green: 230 / 255, blue: 138 / 255)
+            )
+        case .accepted:
+            return BadgeStyle(
+                text: Color(red: 7 / 255, green: 89 / 255, blue: 133 / 255),
+                background: Color(red: 240 / 255, green: 249 / 255, blue: 255 / 255),
+                border: Color(red: 186 / 255, green: 230 / 255, blue: 253 / 255)
+            )
+        case .preparing:
+            return BadgeStyle(
+                text: Color(red: 154 / 255, green: 52 / 255, blue: 18 / 255),
+                background: Color(red: 255 / 255, green: 247 / 255, blue: 237 / 255),
+                border: Color(red: 254 / 255, green: 215 / 255, blue: 170 / 255)
+            )
+        case .ready, .completed:
+            return BadgeStyle(
+                text: Color(red: 6 / 255, green: 95 / 255, blue: 70 / 255),
+                background: Color(red: 236 / 255, green: 253 / 255, blue: 245 / 255),
+                border: Color(red: 167 / 255, green: 243 / 255, blue: 208 / 255)
+            )
+        case .cancelled:
+            return BadgeStyle(
+                text: Color(red: 159 / 255, green: 18 / 255, blue: 57 / 255),
+                background: Color(red: 255 / 255, green: 241 / 255, blue: 242 / 255),
+                border: Color(red: 254 / 255, green: 205 / 255, blue: 211 / 255)
+            )
+        case .rejected:
+            return BadgeStyle(
+                text: Color(red: 51 / 255, green: 65 / 255, blue: 85 / 255),
+                background: Color(red: 241 / 255, green: 245 / 255, blue: 249 / 255),
+                border: Color(red: 226 / 255, green: 232 / 255, blue: 240 / 255)
+            )
+        }
+    }
+
+    private struct BadgeStyle {
+        let text: Color
+        let background: Color
+        let border: Color
     }
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { PencilLine, Plus } from "lucide-react";
-import { MenuImageUploadForm } from "@/components/menu/menu-image-upload-form";
 import { MenuItemForm } from "@/components/menu/menu-item-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,13 +17,11 @@ export function MenuItemSheet({
   categories,
   item,
   settings,
-  hasUploads,
   iconOnly = false,
 }: {
   categories: MenuCategory[];
   item?: MenuItem;
   settings: Pick<AppSettings, "currency_code" | "locale_identifier">;
-  hasUploads: boolean;
   iconOnly?: boolean;
 }) {
   const isEditing = Boolean(item);
@@ -58,16 +55,6 @@ export function MenuItemSheet({
             variant="plain"
             submitLabel={isEditing ? "Save changes" : "Create item"}
           />
-
-          {item && hasUploads ? (
-            <div className="rounded-xl border border-border/70 bg-white p-3">
-              <div className="mb-2 space-y-1">
-                <h3 className="text-sm font-semibold text-foreground">Photo</h3>
-                <p className="text-sm text-muted-foreground">Upload a fresh image and the backend will update the item automatically.</p>
-              </div>
-              <MenuImageUploadForm item={item} isEnabled={hasUploads} />
-            </div>
-          ) : null}
         </div>
       </SheetContent>
     </Sheet>

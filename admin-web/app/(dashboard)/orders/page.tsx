@@ -87,7 +87,7 @@ export default async function OrdersQueuePage({
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Current orders</h1>
           <p className="text-sm text-muted-foreground">
-            Work the live queue from one dense table and open the full order record only when you need deeper context.
+            Work Current Orders from one dense table and open the full order record only when you need deeper context.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -143,14 +143,14 @@ export default async function OrdersQueuePage({
         <CardHeader className="gap-1 border-b border-border/70">
           <CardTitle>Kitchen queue</CardTitle>
           <CardDescription>
-            The database owns the state machine. These controls just advance it. Completed orders leave the live queue
+            The database owns the state machine. These controls just advance it. Completed orders leave Current Orders
             and move to order history.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {filteredOrders.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-sm text-muted-foreground">
-              {orders.length === 0 ? "The live queue is empty right now." : "No live orders match the current filters."}
+              {orders.length === 0 ? "Current Orders are empty right now." : "No Current Orders match the current filters."}
             </div>
           ) : (
             <Table>

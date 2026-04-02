@@ -35,9 +35,10 @@ export default async function DashboardPage({
   searchParams: Promise<{ range?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase, profile } = await requireAdmin();
+  const { supabase, profile, user } = await requireAdmin();
   const settings = await getAppSettings();
   const rangeValue = normalizeRange(params.range);
+  const displayName = profile.full_name?.trim() || fallbackNameFromEmail(user.email);
 
   const { data: orders, error } = await supabase
     .from("orders")
@@ -59,10 +60,10 @@ export default async function DashboardPage({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Welcome back, {profile.full_name ?? "kitchen lead"}.
+            Welcome back, {displayName}.
           </h1>
           <p className="text-sm text-muted-foreground">
-            Watch order flow, response times, and the live queue from one place.
+            Watch order flow, response times, and Current Orders from one place.
           </p>
         </div>
         <DateRangePicker value={String(rangeValue)} />
@@ -116,7 +117,7 @@ export default async function DashboardPage({
                   <ArrowRight data-icon="inline-end" />
                 </Button>
                 <Button render={<Link href="/orders" />} nativeButton={false} variant="outline" size="lg" className="justify-between">
-                  Open live queue
+                  Open Current Orders
                   <ArrowRight data-icon="inline-end" />
                 </Button>
               </div>
@@ -161,8 +162,8 @@ export default async function DashboardPage({
 
           <Card size="sm" className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>Live queue snapshot</CardTitle>
-              <CardDescription>Recent active orders across all live states.</CardDescription>
+              <CardTitle>Current Orders snapshot</CardTitle>
+              <CardDescription>Recent active orders across all in-progress states.</CardDescription>
               <CardAction>
                 <Button render={<Link href="/orders" />} nativeButton={false} variant="ghost" size="sm">
                   Open queue
@@ -190,7 +191,7 @@ export default async function DashboardPage({
                   </Link>
                 ))
               ) : (
-                <EmptyState message="No live orders right now." />
+                <EmptyState message="No Current Orders right now." />
               )}
             </CardContent>
           </Card>
@@ -207,6 +208,20 @@ function normalizeRange(value?: string) {
   }
 
   return 7;
+}
+
+function fallbackNameFromEmail(email?: string | null) {
+  const localPart = email?.split("@")[0]?.trim();
+
+  if (!localPart) {
+    return "kitchen lead";
+  }
+
+  return localPart
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function SummaryMetric({

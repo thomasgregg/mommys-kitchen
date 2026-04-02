@@ -25,7 +25,7 @@ enum AppConfig {
         let title: String
         let detail: String
         let urlString: String
-        let publishableKey: String
+        let anonKey: String
 
         var id: BackendMode { mode }
     }
@@ -46,7 +46,7 @@ enum AppConfig {
             title: BackendMode.local.title,
             detail: "Use your local Supabase stack for development.",
             urlString: defaultLocalURLString,
-            publishableKey: defaultLocalAnonKey
+            anonKey: defaultLocalAnonKey
         )
     }
 
@@ -56,7 +56,7 @@ enum AppConfig {
             title: BackendMode.production.title,
             detail: "Use the hosted Supabase production project.",
             urlString: productionURLString,
-            publishableKey: productionAnonKey
+            anonKey: productionAnonKey
         )
     }
 
@@ -113,7 +113,7 @@ enum AppConfig {
         UserDefaults.standard.string(forKey: customSupabaseURLKey) ?? ""
     }
 
-    static var currentCustomPublishableKey: String {
+    static var currentCustomAnonKey: String {
         UserDefaults.standard.string(forKey: customSupabaseAnonKeyKey) ?? ""
     }
 
@@ -135,14 +135,14 @@ enum AppConfig {
     }
 
     static var supabaseAnonKey: String {
-        currentBackend.publishableKey
+        currentBackend.anonKey
     }
 
     static func saveBackendMode(_ mode: BackendMode) {
         UserDefaults.standard.set(mode.rawValue, forKey: backendModeKey)
     }
 
-    static func saveCustomBackend(url rawURLValue: String, publishableKey rawKeyValue: String) throws {
+    static func saveCustomBackend(url rawURLValue: String, anonKey rawKeyValue: String) throws {
         let normalizedURLValue = rawURLValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedKeyValue = rawKeyValue.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -155,7 +155,7 @@ enum AppConfig {
         }
 
         guard !normalizedKeyValue.isEmpty else {
-            throw AppConfigError.missingPublishableKey
+            throw AppConfigError.missingAnonKey
         }
 
         UserDefaults.standard.set(normalizedURLValue, forKey: customSupabaseURLKey)
@@ -179,35 +179,35 @@ enum AppConfig {
 
     private static var customConfiguration: BackendConfiguration? {
         let urlString = currentCustomURLString.trimmingCharacters(in: .whitespacesAndNewlines)
-        let publishableKey = currentCustomPublishableKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        let anonKey = currentCustomAnonKey.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let url = URL(string: urlString),
               url.scheme != nil,
               url.host != nil,
-              !publishableKey.isEmpty else {
+              !anonKey.isEmpty else {
             return nil
         }
 
         return BackendConfiguration(
             mode: .custom,
             title: BackendMode.custom.title,
-            detail: "Use a manually entered Supabase URL and publishable key.",
+            detail: "Use a manually entered Supabase URL and anon key.",
             urlString: urlString,
-            publishableKey: publishableKey
+            anonKey: anonKey
         )
     }
 }
 
 enum AppConfigError: LocalizedError {
     case invalidURL
-    case missingPublishableKey
+    case missingAnonKey
 
     var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "Enter a full Supabase URL such as https://your-project.supabase.co."
-        case .missingPublishableKey:
-            return "Enter the matching Supabase publishable key for that URL."
+        case .missingAnonKey:
+            return "Enter the matching Supabase anon key for that URL."
         }
     }
 }

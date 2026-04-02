@@ -83,7 +83,7 @@ struct BackendSettingsView: View {
     let showActionDescription: Bool
     @State private var selectedMode = AppConfig.selectedBackendMode
     @State private var serverURL: String
-    @State private var publishableKey: String
+    @State private var anonKey: String
     @State private var errorMessage: String?
 
     init(
@@ -101,7 +101,7 @@ struct BackendSettingsView: View {
         self.prefillCustomValues = prefillCustomValues
         self.showActionDescription = showActionDescription
         _serverURL = State(initialValue: prefillCustomValues ? AppConfig.currentCustomURLString : "")
-        _publishableKey = State(initialValue: prefillCustomValues ? AppConfig.currentCustomPublishableKey : "")
+        _anonKey = State(initialValue: prefillCustomValues ? AppConfig.currentCustomAnonKey : "")
     }
 
     var body: some View {
@@ -116,26 +116,26 @@ struct BackendSettingsView: View {
 
                 if showEnvironmentDetails {
                     VStack(alignment: .leading, spacing: 8) {
-                        switch selectedMode {
-                        case .local:
-                            Text("Local Supabase")
-                                .font(.body.weight(.medium))
-                            Text(appContext.localSupabaseURL)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        case .production:
-                            Text("Hosted production Supabase")
-                                .font(.body.weight(.medium))
-                            Text(appContext.productionSupabaseURL)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        case .custom:
-                            if showCustomHelperText {
-                                Text("Use this only if you need a non-standard environment. The URL and publishable key must belong to the same Supabase project.")
+                    switch selectedMode {
+                    case .local:
+                        Text("Local Supabase")
+                            .font(.body.weight(.medium))
+                        Text(appContext.localSupabaseURL)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    case .production:
+                        Text("Hosted production Supabase")
+                            .font(.body.weight(.medium))
+                        Text(appContext.productionSupabaseURL)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    case .custom:
+                        if showCustomHelperText {
+                                Text("Use this only if you need a non-standard environment. The URL and anon key must belong to the same Supabase project.")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
-                            }
                         }
+                    }
                     }
                     .padding(.vertical, 4)
                 }
@@ -150,7 +150,7 @@ struct BackendSettingsView: View {
                         .foregroundStyle(.primary)
                         .tint(.primary)
 
-                    TextField("sb_publishable_...", text: $publishableKey)
+                    TextField("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", text: $anonKey)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .foregroundStyle(.primary)
@@ -181,7 +181,7 @@ struct BackendSettingsView: View {
                         case .custom:
                             try appContext.updateCustomBackend(
                                 urlString: serverURL,
-                                publishableKey: publishableKey
+                                anonKey: anonKey
                             )
                         }
                         dismiss()
@@ -198,7 +198,7 @@ struct BackendSettingsView: View {
                         appContext.resetToDefaultBackend()
                         selectedMode = .production
                         serverURL = prefillCustomValues ? AppConfig.currentCustomURLString : ""
-                        publishableKey = prefillCustomValues ? AppConfig.currentCustomPublishableKey : ""
+                        anonKey = prefillCustomValues ? AppConfig.currentCustomAnonKey : ""
                         dismiss()
                     }
                     .foregroundStyle(KitchenTheme.accent)
@@ -228,7 +228,7 @@ struct BackendSettingsView: View {
         case .production:
             return "Switch to the hosted production Supabase project and reconnect the app."
         case .custom:
-            return "Save a custom Supabase URL and its matching publishable key together."
+            return "Save a custom Supabase URL and its matching anon key together."
         }
     }
 }

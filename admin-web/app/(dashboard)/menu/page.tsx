@@ -19,7 +19,6 @@ import { UrlSelectFilter } from "@/components/ui/url-select-filter";
 import { toggleMenuAvailabilityAction } from "@/lib/actions/menu";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAppSettings } from "@/lib/data/app-settings";
-import { hasSupabaseAdminAccess } from "@/lib/supabase/admin";
 import type { MenuCategory, MenuItem } from "@/lib/types/app";
 import { formatCurrency } from "@/lib/utils/currency";
 
@@ -30,7 +29,6 @@ export default async function MenuPage({
 }) {
   const { supabase } = await requireAdmin();
   const settings = await getAppSettings();
-  const hasPrivilegedAdmin = hasSupabaseAdminAccess();
   const params = await searchParams;
 
   const [{ data: categories }, { data: items }] = await Promise.all([
@@ -90,7 +88,7 @@ export default async function MenuPage({
           <Button render={<Link href="/categories" />} nativeButton={false} variant="outline" size="lg">
             Categories
           </Button>
-          <MenuItemSheet categories={categories ?? []} settings={settings} hasUploads={hasPrivilegedAdmin} />
+          <MenuItemSheet categories={categories ?? []} settings={settings} />
         </div>
       </section>
 
@@ -140,11 +138,7 @@ export default async function MenuPage({
       <Card className="border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/70">
           <CardTitle>Live menu items</CardTitle>
-          <CardDescription>
-            {hasPrivilegedAdmin
-              ? "Image upload is enabled from the edit sheet."
-              : "Direct image upload is not enabled in this local admin setup yet. You can still use the image URL field in the edit sheet."}
-          </CardDescription>
+          <CardDescription>Add or update menu photos with the image URL field for now.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {filteredItems.length === 0 ? (
@@ -202,7 +196,6 @@ export default async function MenuPage({
                           categories={categories ?? []}
                           item={item}
                           settings={settings}
-                          hasUploads={hasPrivilegedAdmin}
                           iconOnly
                         />
                         <form action={toggleMenuAvailabilityAction}>

@@ -50,7 +50,7 @@ struct ChefBackendSettingsView: View {
     let primaryActionTitle: String
     @State private var selectedMode = AppConfig.selectedBackendMode
     @State private var serverURL = AppConfig.currentCustomURLString
-    @State private var publishableKey = AppConfig.currentCustomPublishableKey
+    @State private var anonKey = AppConfig.currentCustomAnonKey
     @State private var errorMessage: String?
 
     var body: some View {
@@ -78,7 +78,7 @@ struct ChefBackendSettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     case .custom:
-                        Text("Use this only if you need a non-standard environment. The URL and publishable key must belong to the same Supabase project.")
+                        Text("Use this only if you need a non-standard environment. The URL and anon key must belong to the same Supabase project.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -93,7 +93,7 @@ struct ChefBackendSettingsView: View {
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
 
-                    TextField("sb_publishable_...", text: $publishableKey)
+                    TextField("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", text: $anonKey)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
@@ -107,7 +107,7 @@ struct ChefBackendSettingsView: View {
                         case .local, .production:
                             appContext.updateBackendMode(selectedMode)
                         case .custom:
-                            try appContext.updateCustomBackend(urlString: serverURL, publishableKey: publishableKey)
+                            try appContext.updateCustomBackend(urlString: serverURL, anonKey: anonKey)
                         }
                         dismiss()
                     } catch {
@@ -123,7 +123,7 @@ struct ChefBackendSettingsView: View {
                         appContext.resetToDefaultBackend()
                         selectedMode = .production
                         serverURL = AppConfig.currentCustomURLString
-                        publishableKey = AppConfig.currentCustomPublishableKey
+                        anonKey = AppConfig.currentCustomAnonKey
                         dismiss()
                     }
                     .foregroundStyle(KitchenTheme.accent)
