@@ -8,6 +8,68 @@ import { setFlashToast } from "@/lib/utils/flash-toast";
 
 const allowedRoles = new Set<ProfileRole>(["customer", "admin"]);
 
+export async function createUserAction(formData: FormData) {
+  await requireAdmin();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "").trim();
+  const fullName = String(formData.get("fullName") ?? "").trim() || null;
+  const phone = String(formData.get("phone") ?? "").trim() || null;
+  const role = String(formData.get("role") ?? "customer").trim() as ProfileRole;
+
+  if (!email) {
+    throw new Error("Email is required.");
+  }
+
+  if (!password) {
+    throw new Error("Temporary password is required.");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Temporary password must be at least 8 characters.");
+  }
+
+  if (!allowedRoles.has(role)) {
+    throw new Error("Invalid role.");
+  }
+
+  const supabaseAdmin = createSupabaseAdminClient();
+  const { data, error: createError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: fullName,
+      phone,
+    },
+  });
+
+  if (createError || !data.user) {
+    throw new Error(createError?.message ?? "Could not create user.");
+  }
+
+  const { error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .upsert(
+      {
+        id: data.user.id,
+        full_name: fullName,
+        phone,
+        role,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  await setFlashToast({ type: "success", message: "User created." });
+
+  revalidatePath("/users");
+}
+
 export async function updateUserProfileAction(formData: FormData) {
   await requireAdmin();
 

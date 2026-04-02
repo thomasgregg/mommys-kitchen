@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShieldCheck, ShoppingBag } from "lucide-react";
 import { OrdersFilterBar } from "@/components/orders/orders-filter-bar";
 import { StatusFilterChip } from "@/components/orders/status-filter-chip";
+import { UserCreateSheet } from "@/components/users/user-create-sheet";
 import { UserEditSheet } from "@/components/users/user-edit-sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,16 +17,46 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { OrderRecord, Profile } from "@/lib/types/app";
 import { cn } from "@/lib/utils";
 import { roleBadgeClass } from "@/lib/utils/admin-ui";
 import { formatDate } from "@/lib/utils/currency";
 
 type UserRow = Profile & {
+  email: string | null;
   order_count: number;
   last_order_at: string | null;
   last_order_number: string | null;
 };
+
+async function listAuthUsers() {
+  const supabaseAdmin = createSupabaseAdminClient();
+  const users: { id: string; email: string | null }[] = [];
+  let page = 1;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) {
+      throw error;
+    }
+
+    users.push(
+      ...data.users.map((user) => ({
+        id: user.id,
+        email: user.email ?? null,
+      })),
+    );
+
+    if (data.users.length < 200) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return users;
+}
 
 export default async function UsersPage({
   searchParams,
@@ -35,7 +66,7 @@ export default async function UsersPage({
   const params = await searchParams;
   const { supabase } = await requireAdmin();
 
-  const [{ data: profiles, error: profilesError }, { data: orders, error: ordersError }] = await Promise.all([
+  const [{ data: profiles, error: profilesError }, { data: orders, error: ordersError }, authUsers] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, phone, role")
@@ -46,6 +77,7 @@ export default async function UsersPage({
       .select("id, user_id, order_number, created_at, status")
       .order("created_at", { ascending: false })
       .returns<Pick<OrderRecord, "id" | "user_id" | "order_number" | "created_at" | "status">[]>(),
+    listAuthUsers(),
   ]);
 
   if (profilesError) {
@@ -56,12 +88,15 @@ export default async function UsersPage({
     throw new Error(ordersError.message);
   }
 
+  const emailByUserId = new Map(authUsers.map((user) => [user.id, user.email]));
+
   const users: UserRow[] = (profiles ?? []).map((profile) => {
     const userOrders = (orders ?? []).filter((order) => order.user_id === profile.id);
     const latestOrder = userOrders[0];
 
     return {
       ...profile,
+      email: emailByUserId.get(profile.id) ?? null,
       order_count: userOrders.length,
       last_order_at: latestOrder?.created_at ?? null,
       last_order_number: latestOrder?.order_number ?? null,
@@ -75,7 +110,7 @@ export default async function UsersPage({
   const roleFilter = roleFilterParam === "all" ? "" : roleFilterParam;
   const filteredUsers = users.filter((user) => {
     const matchesRole = !roleFilter || user.role === roleFilter;
-    const haystack = `${user.full_name ?? ""} ${user.phone ?? ""} ${user.last_order_number ?? ""}`.toLowerCase();
+    const haystack = `${user.full_name ?? ""} ${user.email ?? ""} ${user.phone ?? ""} ${user.last_order_number ?? ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     return matchesRole && matchesQuery;
   });
@@ -88,6 +123,9 @@ export default async function UsersPage({
           <p className="text-sm text-muted-foreground">
             Keep access tight, edit a profile quickly, and only open the full customer record when you need order history.
           </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <UserCreateSheet />
         </div>
       </section>
 
@@ -113,15 +151,15 @@ export default async function UsersPage({
           </div>
           <OrdersFilterBar
             initialQuery={params.q ?? ""}
-            placeholder="Search by name, phone, or order number"
+            placeholder="Search by name, email, phone, or order number"
           />
         </CardContent>
       </Card>
 
       <Card className="border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/70">
-          <CardTitle>Customer directory</CardTitle>
-          <CardDescription>Compact list with quick edits and a single click into the full record.</CardDescription>
+          <CardTitle>User directory</CardTitle>
+          <CardDescription>Compact list with quick edits, role control, and a fast path into the full record.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {filteredUsers.length === 0 ? (
@@ -133,6 +171,7 @@ export default async function UsersPage({
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Orders</TableHead>
                   <TableHead>Recent activity</TableHead>
@@ -152,6 +191,9 @@ export default async function UsersPage({
                           <p className="truncate text-sm text-muted-foreground">{user.phone || "No phone on file"}</p>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {user.email || "No email on file"}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn("border", roleBadgeClass(user.role))}>
