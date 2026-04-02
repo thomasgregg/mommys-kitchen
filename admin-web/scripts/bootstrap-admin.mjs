@@ -2,19 +2,22 @@ import { createClient } from "@supabase/supabase-js";
 
 const required = [
   "SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
   "SUPABASE_ADMIN_EMAIL",
   "SUPABASE_ADMIN_PASSWORD",
 ];
 
 const missing = required.filter((name) => !process.env[name]);
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SECRET_KEY) {
+  missing.push("SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY");
+}
+
 if (missing.length > 0) {
   console.error(`Missing required environment variables: ${missing.join(", ")}`);
   process.exit(1);
 }
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
 const adminEmail = process.env.SUPABASE_ADMIN_EMAIL;
 const adminPassword = process.env.SUPABASE_ADMIN_PASSWORD;
 const adminFullName = process.env.SUPABASE_ADMIN_FULL_NAME ?? "Kitchen Admin";

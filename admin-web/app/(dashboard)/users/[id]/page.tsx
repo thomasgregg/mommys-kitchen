@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileAdminForm } from "@/components/users/profile-admin-form";
+import { UserPasswordForm } from "@/components/users/user-password-form";
 import {
   Table,
   TableBody,
@@ -76,7 +77,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         />
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="space-y-4">
         <Card size="sm" className="border-border/70 bg-card shadow-sm">
           <CardHeader className="border-b border-border/70">
             <CardTitle>Profile</CardTitle>
@@ -84,6 +85,16 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           </CardHeader>
           <CardContent className="pt-4">
             <ProfileAdminForm profile={profile} variant="plain" submitLabel="Save changes" />
+          </CardContent>
+        </Card>
+
+        <Card size="sm" className="border-border/70 bg-card shadow-sm">
+          <CardHeader className="border-b border-border/70">
+            <CardTitle>Password</CardTitle>
+            <CardDescription>Change the user's sign-in password when needed.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <UserPasswordForm profile={profile} />
           </CardContent>
         </Card>
 

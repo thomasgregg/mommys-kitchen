@@ -107,3 +107,51 @@ export async function updateUserProfileAction(formData: FormData) {
   revalidatePath(`/users/${id}`);
   revalidatePath("/orders");
 }
+
+export async function updateUserPasswordAction(
+  _previousState: { status: "success" | "error"; message: string } | null,
+  formData: FormData,
+) {
+  try {
+    await requireAdmin();
+
+    const id = String(formData.get("id") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+    if (!id) {
+      return { status: "error" as const, message: "Missing user id." };
+    }
+
+    if (!password) {
+      return { status: "error" as const, message: "New password is required." };
+    }
+
+    if (password.length < 8) {
+      return { status: "error" as const, message: "New password must be at least 8 characters." };
+    }
+
+    if (password !== confirmPassword) {
+      return { status: "error" as const, message: "Passwords do not match." };
+    }
+
+    const supabaseAdmin = createSupabaseAdminClient();
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(id, {
+      password,
+    });
+
+    if (error) {
+      return { status: "error" as const, message: error.message };
+    }
+
+    revalidatePath("/users");
+    revalidatePath(`/users/${id}`);
+
+    return { status: "success" as const, message: "Password updated." };
+  } catch (error) {
+    return {
+      status: "error" as const,
+      message: error instanceof Error ? error.message : "Could not update password.",
+    };
+  }
+}

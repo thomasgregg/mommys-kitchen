@@ -13,11 +13,15 @@ import {
 } from "@/components/ui/sheet";
 
 export function UserCreateSheet() {
+  return <UserCreateSheetContent />;
+}
+
+export function UserCreateSheetContent({ disabled = false }: { disabled?: boolean }) {
   return (
     <Sheet>
       <SheetTrigger
         render={
-          <Button variant="outline" size="lg" className="rounded-xl">
+          <Button variant="outline" size="lg" className="rounded-xl" disabled={disabled}>
             <Plus className="size-4" />
             New user
           </Button>
