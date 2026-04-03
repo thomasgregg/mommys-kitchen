@@ -28,10 +28,13 @@ Deno.serve(async (request) => {
       .single();
 
     if (profileLookupError || !profile?.tenant_id) {
-      return new Response(JSON.stringify({ error: "Profile tenant not found" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Profile tenant not found" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const tenantId = profile.tenant_id;

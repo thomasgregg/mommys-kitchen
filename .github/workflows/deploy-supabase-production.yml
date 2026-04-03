@@ -31,7 +31,7 @@ jobs:
       SUPABASE_ADMIN_PHONE: ${{ secrets.SUPABASE_ADMIN_PHONE }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Normalize Supabase settings
         id: supabase
@@ -69,7 +69,7 @@ jobs:
           echo "db_url=$db_url" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
