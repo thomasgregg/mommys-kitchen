@@ -10,10 +10,10 @@ export function OnboardingChecklistCard({ snapshot }: { snapshot: OnboardingSnap
   }
 
   return (
-    <Card size="sm" className="border-border/70 bg-card shadow-sm">
-      <CardHeader className="border-b border-border/70">
-        <CardTitle>Complete your setup</CardTitle>
-        <CardDescription>
+    <Card size="sm" className="border-[#D97745] bg-[#D97745] text-white shadow-sm">
+      <CardHeader className="text-white">
+        <CardTitle className="text-white">Complete your setup</CardTitle>
+        <CardDescription className="text-white/90">
           Finish the quick onboarding checklist so your family can place its first order with confidence.
         </CardDescription>
         <CardAction>
@@ -22,7 +22,7 @@ export function OnboardingChecklistCard({ snapshot }: { snapshot: OnboardingSnap
             nativeButton={false}
             variant="ghost"
             size="sm"
-            className="whitespace-nowrap bg-[#D97745] text-white hover:bg-[#C56B3F] hover:text-white"
+            className="whitespace-nowrap border border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
           >
             Resume setup
             <ArrowRight data-icon="inline-end" />
