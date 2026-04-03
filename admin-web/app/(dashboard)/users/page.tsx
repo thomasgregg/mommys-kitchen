@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { PencilLine, ShieldCheck, ShoppingBag } from "lucide-react";
+import { ShieldCheck, ShoppingBag } from "lucide-react";
 import { OrdersFilterBar } from "@/components/orders/orders-filter-bar";
 import { StatusFilterChip } from "@/components/orders/status-filter-chip";
+import { UserEditSheet } from "@/components/users/user-edit-sheet";
 import { UserCreateSheet } from "@/components/users/user-create-sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -122,7 +123,7 @@ export default async function UsersPage({
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Users & roles</h1>
           <p className="text-sm text-muted-foreground">
-            Keep access tight, add users quickly, and open the full record when you need profile, password, or order history details.
+            Keep access tight, add users quickly, open the full record for read-only context, and use the pencil when you need to edit.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -160,7 +161,7 @@ export default async function UsersPage({
       <Card className="border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/70">
           <CardTitle>User directory</CardTitle>
-          <CardDescription>Compact list with role visibility, contact details, and a direct path into the full user record.</CardDescription>
+          <CardDescription>Compact list with role visibility, contact details, a read-only detail page, and a quick edit sidebar.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {filteredUsers.length === 0 ? (
@@ -212,16 +213,10 @@ export default async function UsersPage({
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
-                        <Button
-                          render={<Link href={"/users/" + user.id} />}
-                          nativeButton={false}
-                          variant="ghost"
-                          size="icon-sm"
-                          className="rounded-lg"
-                          aria-label={`Edit ${user.full_name || "user"}`}
-                        >
-                          <PencilLine className="size-4" />
+                        <Button render={<Link href={"/users/" + user.id} />} nativeButton={false} variant="ghost" size="sm">
+                          Open
                         </Button>
+                        <UserEditSheet profile={user} />
                         <ConfirmSubmitAction
                           title="Delete user?"
                           description={

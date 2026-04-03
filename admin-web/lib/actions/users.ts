@@ -81,42 +81,52 @@ export async function createUserAction(
   }
 }
 
-export async function updateUserProfileAction(formData: FormData) {
-  await requireAdmin();
+export async function updateUserProfileAction(
+  _previousState: { status: "success" | "error"; message: string } | null,
+  formData: FormData,
+) {
+  try {
+    await requireAdmin();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const fullName = String(formData.get("fullName") ?? "").trim() || null;
-  const phone = String(formData.get("phone") ?? "").trim() || null;
-  const role = String(formData.get("role") ?? "customer").trim() as ProfileRole;
+    const id = String(formData.get("id") ?? "").trim();
+    const fullName = String(formData.get("fullName") ?? "").trim() || null;
+    const phone = String(formData.get("phone") ?? "").trim() || null;
+    const role = String(formData.get("role") ?? "customer").trim() as ProfileRole;
 
-  if (!id) {
-    throw new Error("Missing user id.");
+    if (!id) {
+      return { status: "error" as const, message: "Missing user id." };
+    }
+
+    if (!allowedRoles.has(role)) {
+      return { status: "error" as const, message: "Invalid role." };
+    }
+
+    const supabaseAdmin = createSupabaseAdminClient();
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        phone,
+        role,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (error) {
+      return { status: "error" as const, message: error.message };
+    }
+
+    revalidatePath("/users");
+    revalidatePath(`/users/${id}`);
+    revalidatePath("/orders");
+
+    return { status: "success" as const, message: "Profile saved." };
+  } catch (error) {
+    return {
+      status: "error" as const,
+      message: error instanceof Error ? error.message : "Could not save profile.",
+    };
   }
-
-  if (!allowedRoles.has(role)) {
-    throw new Error("Invalid role.");
-  }
-
-  const supabaseAdmin = createSupabaseAdminClient();
-  const { error } = await supabaseAdmin
-    .from("profiles")
-    .update({
-      full_name: fullName,
-      phone,
-      role,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  await setFlashToast({ type: "success", message: "Profile saved." });
-
-  revalidatePath("/users");
-  revalidatePath(`/users/${id}`);
-  revalidatePath("/orders");
 }
 
 export async function updateUserPasswordAction(
