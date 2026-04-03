@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, CheckCircle2, Sparkles, Users, UtensilsCrossed, Settings2, ReceiptText } from "lucide-react";
+import { ArrowRight, ChevronRight, Sparkles, Users, UtensilsCrossed, Settings2, ReceiptText } from "lucide-react";
 import { OnboardingMembersForm } from "@/components/onboarding/onboarding-members-form";
 import { OnboardingSettingsForm } from "@/components/onboarding/onboarding-settings-form";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ export default async function OnboardingPage({
   searchParams: Promise<{ step?: string }>;
 }) {
   const params = await searchParams;
-  const { profile, tenant, supabase } = await requireAdmin();
+  const { profile, supabase } = await requireAdmin();
   const [snapshot, settings] = await Promise.all([
     getOnboardingSnapshot(profile.tenant_id),
     getAppSettings(profile.tenant_id),
@@ -35,6 +35,9 @@ export default async function OnboardingPage({
   const stepParam = Number(params.step);
   const hasExplicitStep = Boolean(params.step);
   const step = normalizeStep(hasExplicitStep ? stepParam : snapshot.nextStep);
+  const starterMenuChosen = snapshot.menuChoice === "sample";
+  const blankMenuChosen = snapshot.menuChoice === "empty" && !snapshot.menuReady;
+  const blankMenuLocked = snapshot.menuReady;
 
   if (snapshot.isComplete && step !== 1) {
     redirect("/");
@@ -50,50 +53,38 @@ export default async function OnboardingPage({
 
   return (
     <div className="space-y-5">
-      <section className="space-y-1">
+      <section>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Family setup</h1>
-        <p className="text-sm text-muted-foreground">
-          Get this family ready for its first real order with a short guided setup.
-        </p>
       </section>
 
       <Card size="sm" className="border-border/70 bg-card shadow-sm">
-        <CardHeader className="border-b border-border/70">
-          <CardTitle>
-            {tenant.name}
-          </CardTitle>
-          <CardDescription>
-            Step {step} of 5. You can stop anytime and continue later from the dashboard checklist.
-          </CardDescription>
-        </CardHeader>
         <CardContent className="pt-4">
-          <div className="mb-4 h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${((step - 1) / 4) * 100}%` }} />
-          </div>
-          <div className="grid gap-2 md:grid-cols-5">
+          <div className="flex flex-wrap items-center gap-2">
             {stepMeta.map((entry) => {
               const complete =
                 entry.value === 1 ||
                 (entry.value === 2 && snapshot.membersReady) ||
-                (entry.value === 3 && snapshot.menuReady) ||
+                (entry.value === 3 && snapshot.menuChoiceMade) ||
                 (entry.value === 4 && snapshot.settingsReady) ||
                 (entry.value === 5 && snapshot.testOrderReady);
               const active = entry.value === step;
               const Icon = entry.icon;
 
               return (
-                <div
-                  key={entry.value}
-                  className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
-                    active
-                      ? "border-primary/20 bg-primary/5"
-                      : complete
-                        ? "border-emerald-200 bg-emerald-50/50"
-                        : "border-border/70 bg-background"
-                  }`}
-                >
-                  <Icon className={`size-4 ${complete ? "text-emerald-600" : active ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="text-sm font-medium text-foreground">{entry.label}</span>
+                <div key={entry.value} className="flex items-center gap-2">
+                  <div
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${
+                      active
+                        ? "border-transparent bg-[#DD7947]"
+                        : complete
+                          ? "border-emerald-200 bg-emerald-50/50"
+                          : "border-border/70 bg-background"
+                    }`}
+                  >
+                    <Icon className={`size-4 ${active ? "text-white" : complete ? "text-emerald-600" : "text-muted-foreground"}`} />
+                    <span className={`text-sm font-medium ${active ? "text-white" : "text-foreground"}`}>{entry.label}</span>
+                  </div>
+                  {entry.value < stepMeta.length ? <ChevronRight className="size-4 text-muted-foreground" /> : null}
                 </div>
               );
             })}
@@ -111,13 +102,13 @@ export default async function OnboardingPage({
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="grid gap-3 md:grid-cols-2">
-              <ChecklistItem label="Add family members who can order from the customer app." />
-              <ChecklistItem label="Load a starter menu or begin with a blank setup." />
-              <ChecklistItem label="Confirm localization settings once for the whole family." />
-              <ChecklistItem label="Place one test order to verify the full flow." />
+              <ChecklistItem number={1} label="Add family members who can order from the customer app." />
+              <ChecklistItem number={2} label="Load a starter menu or begin with a blank setup." />
+              <ChecklistItem number={3} label="Confirm localization settings once for the whole family." />
+              <ChecklistItem number={4} label="Place one test order to verify the full flow." />
             </div>
             <div className="flex flex-wrap justify-end gap-2 border-t border-border/70 pt-4">
-              <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
+              <Button render={<Link href="/" />} nativeButton={false} variant="outline" size="lg">
                 Skip for now
               </Button>
               <Button render={<Link href="/onboarding?step=2" />} nativeButton={false} variant="outline" size="lg">
@@ -133,9 +124,6 @@ export default async function OnboardingPage({
         <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader className="border-b border-border/70">
             <CardTitle>Add family members</CardTitle>
-            <CardDescription>
-              Create customer accounts so someone can sign into the customer app and place the first test order.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-3">
@@ -164,7 +152,6 @@ export default async function OnboardingPage({
             <Card size="sm" className="border-border/70 bg-muted/10 shadow-none">
               <CardHeader>
                 <CardTitle>Add a family member</CardTitle>
-                <CardDescription>Create one customer account now and add the rest later if you want.</CardDescription>
               </CardHeader>
               <CardContent>
                 <OnboardingMembersForm />
@@ -172,18 +159,14 @@ export default async function OnboardingPage({
             </Card>
 
             <div className="flex flex-wrap justify-between gap-2 border-t border-border/70 pt-4">
-              <Button render={<Link href="/onboarding?step=1" />} nativeButton={false} variant="ghost" size="sm">
+              <Button render={<Link href="/onboarding?step=1" />} nativeButton={false} variant="outline" size="lg">
                 Back
               </Button>
               <div className="flex gap-2">
-                <Button render={<Link href="/onboarding?step=3" />} nativeButton={false} variant="ghost" size="sm">
-                  Continue later
+                <Button render={<Link href="/onboarding?step=3" />} nativeButton={false} variant="outline" size="lg">
+                  Continue
+                  <ArrowRight data-icon="inline-end" />
                 </Button>
-                {snapshot.membersReady ? (
-                  <Button render={<Link href="/onboarding?step=3" />} nativeButton={false} variant="outline" size="lg">
-                    Continue
-                  </Button>
-                ) : null}
               </div>
             </div>
           </CardContent>
@@ -194,16 +177,26 @@ export default async function OnboardingPage({
         <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader className="border-b border-border/70">
             <CardTitle>Set up your menu</CardTitle>
-            <CardDescription>
-              Start with a ready-made menu or keep everything blank and build it yourself.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
+            <div className="text-sm font-medium text-muted-foreground">Choose one option</div>
             <div className="grid gap-4 lg:grid-cols-2">
-              <form action={seedSampleMenuAction} className="rounded-xl border border-border/70 bg-background p-4">
+              <form
+                action={seedSampleMenuAction}
+                className={`rounded-xl border p-4 ${
+                  starterMenuChosen
+                    ? "border-emerald-200 bg-emerald-50/60"
+                    : "border-border/70 bg-background"
+                }`}
+              >
                 <input type="hidden" name="mode" value="sample" />
                 <div className="space-y-2">
-                  <h3 className="font-medium text-foreground">Load starter menu</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex size-6 items-center justify-center rounded-full border border-border/70 text-xs font-semibold text-foreground">
+                      1
+                    </span>
+                    <h3 className="font-medium text-foreground">Load starter menu</h3>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Add sample categories and dishes you can edit, delete, or replace anytime.
                   </p>
@@ -215,15 +208,30 @@ export default async function OnboardingPage({
                 </div>
                 <div className="mt-4 flex justify-end">
                   <Button type="submit" variant="outline" size="lg">
-                    Load starter menu
+                    {starterMenuChosen ? "Starter menu chosen" : "Choose starter menu"}
+                    <ArrowRight data-icon="inline-end" />
                   </Button>
                 </div>
               </form>
 
-              <form action={seedSampleMenuAction} className="rounded-xl border border-border/70 bg-background p-4">
+              <form
+                action={seedSampleMenuAction}
+                className={`rounded-xl border p-4 ${
+                  blankMenuChosen
+                    ? "border-emerald-200 bg-emerald-50/60"
+                    : blankMenuLocked
+                      ? "border-border/50 bg-muted/10"
+                    : "border-border/70 bg-background"
+                }`}
+              >
                 <input type="hidden" name="mode" value="empty" />
                 <div className="space-y-2">
-                  <h3 className="font-medium text-foreground">Start empty</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex size-6 items-center justify-center rounded-full border border-border/70 text-xs font-semibold text-foreground">
+                      2
+                    </span>
+                    <h3 className="font-medium text-foreground">Start empty</h3>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Begin with a blank menu and build categories and items yourself.
                   </p>
@@ -232,8 +240,9 @@ export default async function OnboardingPage({
                   </p>
                 </div>
                 <div className="mt-4 flex justify-end">
-                  <Button type="submit" variant="ghost" size="sm">
-                    Start empty
+                  <Button type="submit" variant="outline" size="lg" disabled={blankMenuLocked}>
+                    {blankMenuChosen ? "Blank menu chosen" : blankMenuLocked ? "Blank menu unavailable" : "Choose blank menu"}
+                    <ArrowRight data-icon="inline-end" />
                   </Button>
                 </div>
               </form>
@@ -246,14 +255,13 @@ export default async function OnboardingPage({
             ) : null}
 
             <div className="flex flex-wrap justify-between gap-2 border-t border-border/70 pt-4">
-              <Button render={<Link href="/onboarding?step=2" />} nativeButton={false} variant="ghost" size="sm">
+              <Button render={<Link href="/onboarding?step=2" />} nativeButton={false} variant="outline" size="lg">
                 Back
               </Button>
-              {snapshot.menuReady ? (
-                <Button render={<Link href="/onboarding?step=4" />} nativeButton={false} variant="outline" size="lg">
-                  Continue
-                </Button>
-              ) : null}
+              <Button render={<Link href="/onboarding?step=4" />} nativeButton={false} variant="outline" size="lg">
+                Continue
+                <ArrowRight data-icon="inline-end" />
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -269,11 +277,6 @@ export default async function OnboardingPage({
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <OnboardingSettingsForm settings={settings} />
-            <div className="flex justify-start">
-              <Button render={<Link href="/onboarding?step=3" />} nativeButton={false} variant="ghost" size="sm">
-                Back
-              </Button>
-            </div>
           </CardContent>
         </Card>
       ) : null}
@@ -288,10 +291,10 @@ export default async function OnboardingPage({
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="grid gap-3 md:grid-cols-2">
-              <ChecklistItem label="Sign in to the customer app with a family member account." />
-              <ChecklistItem label="Place one small sample order from the live menu." />
-              <ChecklistItem label="Open Current Orders or Kitchen Admin and accept the order." />
-              <ChecklistItem label="Mark the order ready or complete to confirm the full flow." />
+              <ChecklistItem number={1} label="Sign in to the customer app with a family member account." />
+              <ChecklistItem number={2} label="Place one small sample order from the live menu." />
+              <ChecklistItem number={3} label="Open Current Orders or Kitchen Admin and accept the order." />
+              <ChecklistItem number={4} label="Mark the order ready or complete to confirm the full flow." />
             </div>
 
             <div className="rounded-xl border border-border/70 bg-background px-4 py-3">
@@ -306,16 +309,14 @@ export default async function OnboardingPage({
             </div>
 
             <div className="flex flex-wrap justify-between gap-2 border-t border-border/70 pt-4">
-              <Button render={<Link href="/onboarding?step=4" />} nativeButton={false} variant="ghost" size="sm">
+              <Button render={<Link href="/onboarding?step=4" />} nativeButton={false} variant="outline" size="lg">
                 Back
               </Button>
               <div className="flex gap-2">
-                <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
-                  Finish later
-                </Button>
                 <form action={completeOnboardingAction}>
                   <Button type="submit" variant="outline" size="lg">
                     {snapshot.testOrderReady ? "Complete setup" : "Go to dashboard"}
+                    <ArrowRight data-icon="inline-end" />
                   </Button>
                 </form>
               </div>
@@ -335,10 +336,12 @@ function normalizeStep(value: number) {
   return 2;
 }
 
-function ChecklistItem({ label }: { label: string }) {
+function ChecklistItem({ label, number }: { label: string; number: number }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-background px-4 py-3">
-      <CheckCircle2 className="mt-0.5 size-4 text-primary" />
+      <div className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/70 text-xs font-semibold text-foreground">
+        {number}
+      </div>
       <span className="text-sm text-foreground">{label}</span>
     </div>
   );

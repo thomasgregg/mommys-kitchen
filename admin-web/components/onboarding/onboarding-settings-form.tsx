@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { currencyOptions, languageOptions, localeIdentifierForLanguage } from "@/lib/constants/app-settings";
 import { updateOnboardingSettingsAction } from "@/lib/actions/onboarding";
@@ -42,8 +44,11 @@ export function OnboardingSettingsForm({ settings }: { settings: AppSettings }) 
         <p className="text-muted-foreground">{localeIdentifier}</p>
       </div>
 
-      <div className="flex justify-end border-t border-border/70 pt-2.5">
-        <SubmitButton label="Save and continue" variant="outline" size="lg" className="h-10 min-w-44 rounded-xl px-5" />
+      <div className="flex flex-wrap justify-between gap-2 border-t border-border/70 pt-4">
+        <Button render={<Link href="/onboarding?step=3" />} nativeButton={false} variant="outline" size="lg">
+          Back
+        </Button>
+        <SubmitButton label="Save and continue" variant="outline" size="lg" className="min-w-44 rounded-xl px-5" />
       </div>
     </form>
   );

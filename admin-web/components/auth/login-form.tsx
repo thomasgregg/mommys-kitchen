@@ -18,22 +18,22 @@ export function LoginForm({ error, message }: { error?: string; message?: string
       : undefined;
 
   return (
-    <Card className="mx-auto w-full max-w-lg border-border/80 bg-card shadow-sm">
-      <CardHeader className="gap-3 border-b border-border/70 px-5 py-6 text-center">
+    <Card className="mx-auto w-full max-w-md border-border/80 bg-card shadow-sm">
+      <CardHeader className="gap-2 border-b border-border/70 px-4 py-4 text-center">
         <div className="flex w-full justify-center">
-          <BrandMark className="!size-14" />
+          <BrandMark className="!size-12" />
         </div>
-        <div className="flex flex-col gap-2">
-          <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Mommy&apos;s Kitchen Admin</CardTitle>
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-[2rem] font-semibold tracking-tight text-foreground">Mommy&apos;s Kitchen Admin</CardTitle>
           <CardDescription className="text-sm">Sign in to continue to the dashboard.</CardDescription>
         </div>
       </CardHeader>
 
-      <CardContent className="px-5 py-6">
+      <CardContent className="px-4 py-4">
         <form
           ref={formRef}
           action={signInAction}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3"
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
@@ -45,14 +45,14 @@ export function LoginForm({ error, message }: { error?: string; message?: string
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               Email
             </label>
-            <Input id="email" name="email" type="email" required placeholder="name@example.com" className="h-11 bg-background px-4" />
+            <Input id="email" name="email" type="email" required placeholder="name@example.com" className="h-10 bg-background px-4" />
           </div>
 
           <div className="flex flex-col gap-2.5">
             <label htmlFor="password" className="text-sm font-medium text-foreground">
               Password
             </label>
-            <Input id="password" name="password" type="password" required placeholder="Enter your password" className="h-11 bg-background px-4" />
+            <Input id="password" name="password" type="password" required placeholder="Enter your password" className="h-10 bg-background px-4" />
           </div>
 
           {safeError ? (
@@ -69,7 +69,7 @@ export function LoginForm({ error, message }: { error?: string; message?: string
             </Alert>
           ) : null}
 
-          <Button type="submit" variant="outline" size="lg" className="mt-1 w-full justify-center text-base">
+          <Button type="submit" variant="outline" size="lg" className="w-full justify-center text-base">
             Sign in
             <ArrowRight data-icon="inline-end" />
           </Button>

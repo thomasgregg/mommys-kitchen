@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { OnboardingSnapshot } from "@/lib/types/app";
 
 type TenantOnboardingSettingsRow = {
+  onboarding_menu_choice: "sample" | "empty" | null;
   settings_reviewed_at: string | null;
   onboarding_completed_at: string | null;
 };
@@ -36,13 +37,14 @@ export const getOnboardingSnapshot = cache(async (tenantId: string): Promise<Onb
       .eq("tenant_id", tenantId),
     supabaseAdmin
       .from("tenant_settings")
-      .select("settings_reviewed_at, onboarding_completed_at")
+      .select("onboarding_menu_choice, settings_reviewed_at, onboarding_completed_at")
       .eq("tenant_id", tenantId)
       .maybeSingle<TenantOnboardingSettingsRow>(),
   ]);
 
   const membersReady = (customerCount ?? 0) > 0;
-  const menuReady = (categoryCount ?? 0) > 0 && (itemCount ?? 0) > 0;
+  const menuChoiceMade = settings?.onboarding_menu_choice === "sample" || settings?.onboarding_menu_choice === "empty";
+  const menuReady = ((categoryCount ?? 0) > 0 && (itemCount ?? 0) > 0) || settings?.onboarding_menu_choice === "empty";
   const settingsReady = Boolean(settings?.settings_reviewed_at);
   const testOrderReady = (orderCount ?? 0) > 0;
   const completedSteps = [membersReady, menuReady, settingsReady, testOrderReady].filter(Boolean).length;
@@ -65,6 +67,8 @@ export const getOnboardingSnapshot = cache(async (tenantId: string): Promise<Onb
     categoryCount: categoryCount ?? 0,
     itemCount: itemCount ?? 0,
     orderCount: orderCount ?? 0,
+    menuChoice: settings?.onboarding_menu_choice ?? null,
+    menuChoiceMade,
     settingsReviewedAt: settings?.settings_reviewed_at ?? null,
     onboardingCompletedAt: settings?.onboarding_completed_at ?? null,
     membersReady,

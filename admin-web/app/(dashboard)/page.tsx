@@ -6,7 +6,6 @@ import { OnboardingChecklistCard } from "@/components/onboarding/onboarding-chec
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAppSettings } from "@/lib/data/app-settings";
 import { getOnboardingSnapshot } from "@/lib/data/onboarding";
@@ -58,7 +57,6 @@ export default async function DashboardPage({
   }
 
   const stats = buildDashboardStats(orders ?? [], rangeValue, settings.locale_identifier);
-  const liveOrders = (orders ?? []).filter((order) => liveStatuses.includes(order.status)).slice(0, 6);
   const awaitingOrders = (orders ?? []).filter((order) => order.status === "placed").slice(0, 5);
 
   return (
@@ -108,7 +106,7 @@ export default async function DashboardPage({
         <div className="flex flex-col gap-4">
           <Card size="sm" className="border-border/70 bg-card shadow-sm">
             <CardHeader className="gap-1 border-b border-border/70">
-              <CardTitle>Queue health</CardTitle>
+              <CardTitle>Order health</CardTitle>
               <CardDescription>What needs attention right now.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 pt-4">
@@ -117,17 +115,6 @@ export default async function DashboardPage({
                 <CompactStat label="Accepted" value={stats.statusBreakdown.accepted} tone="neutral" />
                 <CompactStat label="Preparing" value={stats.statusBreakdown.preparing} tone="neutral" />
                 <CompactStat label="Ready" value={stats.readyCount} tone="success" />
-              </div>
-              <Separator />
-              <div className="grid gap-2">
-                <Button render={<Link href="/orders?status=placed" />} nativeButton={false} variant="outline" size="lg" className="justify-between">
-                  Accept an order
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
-                <Button render={<Link href="/orders" />} nativeButton={false} variant="outline" size="lg" className="justify-between">
-                  Open Current Orders
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -168,41 +155,6 @@ export default async function DashboardPage({
             </CardContent>
           </Card>
 
-          <Card size="sm" className="border-border/70 bg-card shadow-sm">
-            <CardHeader>
-              <CardTitle>Current Orders snapshot</CardTitle>
-              <CardDescription>Recent active orders across all in-progress states.</CardDescription>
-              <CardAction>
-                <Button render={<Link href="/orders" />} nativeButton={false} variant="ghost" size="sm">
-                  Open Current Orders
-                </Button>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {liveOrders.length ? (
-                liveOrders.map((order) => (
-                  <Link
-                    key={order.id}
-                    href={`/orders/${order.id}`}
-                    className="flex items-center justify-between rounded-xl border border-border/70 bg-background px-4 py-3 transition hover:border-primary/20 hover:bg-primary/5"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground">{order.order_number}</p>
-                      <p className="text-sm text-muted-foreground">{formatDate(order.created_at, settings)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-foreground">{formatCurrency(order.total_cents, settings)}</p>
-                      <Badge variant="outline" className={cn("mt-2 border", statusBadgeClass(order.status))}>
-                        {statusLabel(order.status)}
-                      </Badge>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <EmptyState message="No Current Orders right now." />
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

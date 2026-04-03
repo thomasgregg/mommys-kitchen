@@ -78,7 +78,7 @@ export function Sidebar() {
                       className={cn(
                         "h-10 rounded-xl px-3 text-sm font-medium text-sidebar-foreground transition-all group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center",
                         active
-                          ? "bg-slate-950 text-white shadow-sm hover:bg-slate-900"
+                          ? "border border-slate-950 bg-background text-foreground shadow-none hover:bg-slate-100 data-active:border-slate-950 data-active:bg-background data-active:text-foreground data-active:shadow-none data-active:hover:bg-slate-100"
                           : "hover:bg-slate-100"
                       )}
                     >

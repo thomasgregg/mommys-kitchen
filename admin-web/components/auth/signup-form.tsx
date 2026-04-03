@@ -18,22 +18,22 @@ export function SignupForm({ error }: { error?: string }) {
       : undefined;
 
   return (
-    <Card className="mx-auto w-full max-w-lg border-border/80 bg-card shadow-sm">
-      <CardHeader className="gap-3 border-b border-border/70 px-5 py-6 text-center">
+    <Card className="mx-auto w-full max-w-md border-border/80 bg-card shadow-sm">
+      <CardHeader className="gap-2 border-b border-border/70 px-4 py-4 text-center">
         <div className="flex w-full justify-center">
-          <BrandMark className="!size-14" src="/brand/mommys-kitchen-mark-navy.svg" />
+          <BrandMark className="!size-12" />
         </div>
-        <div className="flex flex-col gap-2">
-          <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Create a family</CardTitle>
-          <CardDescription className="text-sm">Set up your family kitchen and become the first admin automatically.</CardDescription>
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-[2rem] font-semibold tracking-tight text-foreground">Create a family</CardTitle>
+          <CardDescription className="text-sm">Set up your family kitchen and become the first admin.</CardDescription>
         </div>
       </CardHeader>
 
-      <CardContent className="px-5 py-6">
+      <CardContent className="px-4 py-4">
         <form
           ref={formRef}
           action={signUpTenantAction}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3"
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
@@ -45,22 +45,22 @@ export function SignupForm({ error }: { error?: string }) {
             <label htmlFor="tenantName" className="text-sm font-medium text-foreground">
               Family name
             </label>
-            <Input id="tenantName" name="tenantName" required placeholder="The Smith Family" className="h-11 bg-background px-4" />
+            <Input id="tenantName" name="tenantName" required placeholder="The Smith Family" className="h-10 bg-background px-4" />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <div className="flex flex-col gap-2.5">
               <label htmlFor="fullName" className="text-sm font-medium text-foreground">
                 Your name
               </label>
-              <Input id="fullName" name="fullName" required placeholder="Peter" className="h-11 bg-background px-4" />
+              <Input id="fullName" name="fullName" required placeholder="Peter" className="h-10 bg-background px-4" />
             </div>
 
             <div className="flex flex-col gap-2.5">
               <label htmlFor="phone" className="text-sm font-medium text-foreground">
                 Phone
               </label>
-              <Input id="phone" name="phone" placeholder="+49 ..." className="h-11 bg-background px-4" />
+              <Input id="phone" name="phone" placeholder="+49 ..." className="h-10 bg-background px-4" />
             </div>
           </div>
 
@@ -68,14 +68,14 @@ export function SignupForm({ error }: { error?: string }) {
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               Email
             </label>
-            <Input id="email" name="email" type="email" required placeholder="name@example.com" className="h-11 bg-background px-4" />
+            <Input id="email" name="email" type="email" required placeholder="name@example.com" className="h-10 bg-background px-4" />
           </div>
 
           <div className="flex flex-col gap-2.5">
             <label htmlFor="password" className="text-sm font-medium text-foreground">
               Password
             </label>
-            <Input id="password" name="password" type="password" required minLength={8} placeholder="At least 8 characters" className="h-11 bg-background px-4" />
+            <Input id="password" name="password" type="password" required minLength={8} placeholder="At least 8 characters" className="h-10 bg-background px-4" />
           </div>
 
           {safeError ? (
@@ -85,7 +85,7 @@ export function SignupForm({ error }: { error?: string }) {
             </Alert>
           ) : null}
 
-          <Button type="submit" variant="outline" size="lg" className="mt-1 w-full justify-center text-base">
+          <Button type="submit" variant="outline" size="lg" className="w-full justify-center text-base">
             Create family
             <ArrowRight data-icon="inline-end" />
           </Button>

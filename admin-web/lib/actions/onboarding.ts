@@ -22,6 +22,7 @@ const sampleItems = [
     category: "Favorites",
     name: "Chicken Nuggets",
     description: "Crispy all-white-meat nuggets served hot and ready for hungry kids.",
+    image_url: "https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=1200&q=80",
     price_cents: 799,
     prep_minutes: 12,
     is_featured: false,
@@ -30,6 +31,7 @@ const sampleItems = [
     category: "Favorites",
     name: "Grilled Cheese",
     description: "Butter-toasted sourdough with melted cheddar and mozzarella.",
+    image_url: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80",
     price_cents: 699,
     prep_minutes: 10,
     is_featured: false,
@@ -38,6 +40,7 @@ const sampleItems = [
     category: "Comfort Classics",
     name: "Mac & Cheese",
     description: "Creamy elbow macaroni folded into a rich cheddar sauce.",
+    image_url: "/sample-menu/mac-and-cheese.jpg",
     price_cents: 899,
     prep_minutes: 15,
     is_featured: true,
@@ -46,6 +49,7 @@ const sampleItems = [
     category: "Comfort Classics",
     name: "Spaghetti & Meatballs",
     description: "Tender meatballs with spaghetti and a slow-simmered tomato sauce.",
+    image_url: "https://images.unsplash.com/photo-1622973536968-3ead9e780960?auto=format&fit=crop&w=1200&q=80",
     price_cents: 1399,
     prep_minutes: 22,
     is_featured: true,
@@ -54,6 +58,7 @@ const sampleItems = [
     category: "Soups & Sides",
     name: "Tomato Soup",
     description: "Velvety tomato soup finished with basil and a touch of cream.",
+    image_url: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
     price_cents: 599,
     prep_minutes: 8,
     is_featured: false,
@@ -62,6 +67,7 @@ const sampleItems = [
     category: "Soups & Sides",
     name: "Side Salad",
     description: "Fresh greens with cucumber, tomato, and a simple vinaigrette.",
+    image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
     price_cents: 499,
     prep_minutes: 6,
     is_featured: false,
@@ -70,6 +76,7 @@ const sampleItems = [
     category: "Drinks",
     name: "Apple Juice",
     description: "Chilled apple juice served in a small family-size glass.",
+    image_url: "/sample-menu/apple-juice.jpg",
     price_cents: 299,
     prep_minutes: 1,
     is_featured: false,
@@ -78,6 +85,7 @@ const sampleItems = [
     category: "Desserts",
     name: "Chocolate Pudding",
     description: "Smooth chocolate pudding with a little whipped cream on top.",
+    image_url: "/sample-menu/chocolate-pudding.jpg",
     price_cents: 399,
     prep_minutes: 3,
     is_featured: false,
@@ -152,8 +160,18 @@ export async function addFamilyMemberOnboardingAction(_previousState: ActionStat
 export async function seedSampleMenuAction(formData: FormData) {
   const { profile } = await requireAdmin();
   const mode = String(formData.get("mode") ?? "sample").trim();
+  const supabaseAdmin = createSupabaseAdminClient();
 
   if (mode === "empty") {
+    const { error: settingsError } = await supabaseAdmin.from("tenant_settings").upsert({
+      tenant_id: profile.tenant_id,
+      onboarding_menu_choice: "empty",
+    });
+
+    if (settingsError) {
+      throw new Error(settingsError.message);
+    }
+
     await setFlashToast({
       type: "success",
       message: "Starting with an empty menu. You can add categories and items anytime.",
@@ -161,8 +179,6 @@ export async function seedSampleMenuAction(formData: FormData) {
 
     redirect("/onboarding?step=4");
   }
-
-  const supabaseAdmin = createSupabaseAdminClient();
 
   const { error: categoriesError } = await supabaseAdmin
     .from("menu_categories")
@@ -198,7 +214,7 @@ export async function seedSampleMenuAction(formData: FormData) {
       category_id: categoryIdByName.get(item.category),
       name: item.name,
       description: item.description,
-      image_url: null,
+      image_url: item.image_url,
       price_cents: item.price_cents,
       prep_minutes: item.prep_minutes,
       is_available: true,
@@ -212,6 +228,15 @@ export async function seedSampleMenuAction(formData: FormData) {
 
   if (itemsError) {
     throw new Error(itemsError.message);
+  }
+
+  const { error: settingsError } = await supabaseAdmin.from("tenant_settings").upsert({
+    tenant_id: profile.tenant_id,
+    onboarding_menu_choice: "sample",
+  });
+
+  if (settingsError) {
+    throw new Error(settingsError.message);
   }
 
   await setFlashToast({

@@ -36,6 +36,8 @@ export type OnboardingSnapshot = {
   categoryCount: number;
   itemCount: number;
   orderCount: number;
+  menuChoice: "sample" | "empty" | null;
+  menuChoiceMade: boolean;
   settingsReviewedAt: string | null;
   onboardingCompletedAt: string | null;
   membersReady: boolean;
