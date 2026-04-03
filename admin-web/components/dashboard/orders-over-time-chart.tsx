@@ -21,11 +21,11 @@ type Point = {
 const chartConfig = {
   orders: {
     label: "Orders",
-    color: "#2C3646",
+    color: "#D97745",
   },
   revenue: {
     label: "Revenue",
-    color: "#2C3646",
+    color: "#D97745",
   },
 } satisfies ChartConfig;
 

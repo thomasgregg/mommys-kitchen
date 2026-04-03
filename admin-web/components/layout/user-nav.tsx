@@ -15,14 +15,15 @@ import {
 import { signOutAction } from "@/lib/actions/auth";
 import type { Profile } from "@/lib/types/app";
 
-export function UserNav({ profile }: { profile: Profile }) {
+export function UserNav({ profile, tenantName }: { profile: Profile; tenantName: string }) {
   const initials = getInitials(profile.full_name);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon-lg" className="rounded-full p-0 hover:bg-transparent">
+          <Button variant="ghost" className="h-10 gap-2 rounded-full px-1.5 hover:bg-slate-100">
+            <span className="hidden max-w-44 truncate text-sm text-muted-foreground md:block">{tenantName}</span>
             <Avatar size="lg" className="bg-white shadow-sm">
               <AvatarFallback className="bg-white font-semibold text-foreground">{initials}</AvatarFallback>
             </Avatar>

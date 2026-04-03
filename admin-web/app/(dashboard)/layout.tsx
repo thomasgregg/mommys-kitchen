@@ -4,7 +4,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { requireAdmin } from "@/lib/auth/require-admin";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = await requireAdmin();
+  const { profile, tenant } = await requireAdmin();
 
   return (
     <SidebarProvider defaultOpen>
@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 md:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="ml-auto">
-              <UserNav profile={profile} />
+              <UserNav profile={profile} tenantName={tenant.name} />
             </div>
           </div>
         </header>

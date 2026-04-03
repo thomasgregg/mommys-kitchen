@@ -1,7 +1,7 @@
 import Foundation
 import Supabase
 
-struct OrderRepository {
+struct OrderRepository: Sendable {
     enum PushAppTarget: String, Encodable {
         case customerIOS = "customer_ios"
         case mommyIOS = "mommy_ios"
@@ -68,19 +68,27 @@ struct OrderRepository {
     let supabase: SupabaseService
 
     func fetchOrders() async throws -> [Order] {
-        try await supabase.client
+        let (userID, tenantID) = try await fetchCurrentUserScope()
+
+        return try await supabase.client
             .from("orders")
             .select("*, order_items(*), order_status_history(*)")
+            .eq("user_id", value: userID.uuidString)
+            .eq("tenant_id", value: tenantID.uuidString)
             .order("created_at", ascending: false)
             .execute()
             .value
     }
 
     func fetchOrder(id: UUID) async throws -> Order {
-        try await supabase.client
+        let (userID, tenantID) = try await fetchCurrentUserScope()
+
+        return try await supabase.client
             .from("orders")
             .select("*, order_items(*), order_status_history(*)")
             .eq("id", value: id.uuidString)
+            .eq("user_id", value: userID.uuidString)
+            .eq("tenant_id", value: tenantID.uuidString)
             .single()
             .execute()
             .value
@@ -265,5 +273,11 @@ struct OrderRepository {
             "key_kind=\(keyKind)",
             sessionDetails,
         ].joined(separator: " | ")
+    }
+
+    private func fetchCurrentUserScope() async throws -> (userID: UUID, tenantID: UUID) {
+        let session = try await supabase.client.auth.session
+        let tenantID = try await ProfileRepository(supabase: supabase).fetchTenantID(userID: session.user.id)
+        return (session.user.id, tenantID)
     }
 }

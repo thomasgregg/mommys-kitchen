@@ -21,11 +21,26 @@ Deno.serve(async (request) => {
     }
 
     const userId = userData.user.id;
+    const { data: profile, error: profileLookupError } = await adminClient
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", userId)
+      .single();
+
+    if (profileLookupError || !profile?.tenant_id) {
+      return new Response(JSON.stringify({ error: "Profile tenant not found" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const tenantId = profile.tenant_id;
 
     const { error: deviceTokenError } = await adminClient
       .from("device_tokens")
       .delete()
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .eq("tenant_id", tenantId);
 
     if (deviceTokenError) {
       throw deviceTokenError;
@@ -34,7 +49,8 @@ Deno.serve(async (request) => {
     const { error: notificationError } = await adminClient
       .from("notifications")
       .delete()
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .eq("tenant_id", tenantId);
 
     if (notificationError) {
       throw notificationError;
@@ -47,7 +63,8 @@ Deno.serve(async (request) => {
         phone: null,
         role: "customer",
       })
-      .eq("id", userId);
+      .eq("id", userId)
+      .eq("tenant_id", tenantId);
 
     if (profileError) {
       throw profileError;

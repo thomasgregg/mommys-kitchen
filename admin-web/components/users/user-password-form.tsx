@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SubmitButton } from "@/components/ui/submit-button";
 import { updateUserPasswordAction } from "@/lib/actions/users";
 import type { Profile } from "@/lib/types/app";
 
@@ -21,23 +20,43 @@ export function UserPasswordForm({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
-  const [state, formAction, pending] = useActionState(updateUserPasswordAction, null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!state) {
-      return;
-    }
+  function resetPasswordFields() {
+    setPassword("");
+    setConfirmPassword("");
+  }
 
-    if (state.status === "success") {
-      toast.success(state.message);
-      setFeedback(state);
-      setIsOpen(false);
-      onSuccess?.();
-    } else if (state.status === "error") {
+  function handleCancel() {
+    setFeedback(null);
+    resetPasswordFields();
+    setIsOpen(false);
+  }
+
+  function handleSubmit() {
+    const formData = new FormData();
+    formData.set("id", profile.id);
+    formData.set("password", password);
+    formData.set("confirmPassword", confirmPassword);
+
+    startTransition(async () => {
+      const state = await updateUserPasswordAction(null, formData);
+
+      if (state.status === "success") {
+        toast.success(state.message);
+        setFeedback(null);
+        resetPasswordFields();
+        setIsOpen(false);
+        onSuccess?.();
+        return;
+      }
+
       toast.error(state.message);
       setFeedback(state);
-    }
-  }, [onSuccess, state]);
+    });
+  }
 
   return (
     <div className={embedded ? "border-t border-border/70 pt-3" : ""}>
@@ -62,6 +81,7 @@ export function UserPasswordForm({
             className="justify-start self-start sm:self-auto"
             onClick={() => {
               setFeedback(null);
+              resetPasswordFields();
               setIsOpen(true);
             }}
             disabled={disabled}
@@ -72,18 +92,30 @@ export function UserPasswordForm({
       </div>
 
       {isOpen && !disabled ? (
-        <form action={formAction} className="mt-3 flex flex-col gap-3">
-          <input type="hidden" name="id" value={profile.id} />
-
+        <div className="mt-3 flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
             <label className="grid gap-2.5">
               <span className="text-sm font-medium text-foreground">New password</span>
-              <Input name="password" type="password" minLength={8} placeholder="At least 8 characters" className="h-9 rounded-xl bg-background" />
+              <Input
+                type="password"
+                minLength={8}
+                placeholder="At least 8 characters"
+                className="h-9 rounded-xl bg-background"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
             </label>
 
             <label className="grid gap-2.5">
               <span className="text-sm font-medium text-foreground">Confirm password</span>
-              <Input name="confirmPassword" type="password" minLength={8} placeholder="Repeat the new password" className="h-9 rounded-xl bg-background" />
+              <Input
+                type="password"
+                minLength={8}
+                placeholder="Repeat the new password"
+                className="h-9 rounded-xl bg-background"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
             </label>
           </div>
 
@@ -93,22 +125,22 @@ export function UserPasswordForm({
               variant="ghost"
               size="sm"
               className="justify-start text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                setFeedback(null);
-                setIsOpen(false);
-              }}
+              onClick={handleCancel}
             >
               Cancel
             </Button>
-            <SubmitButton
-              label="Update password"
+            <Button
+              type="button"
               variant="ghost"
               size="sm"
               disabled={pending}
               className="justify-start"
-            />
+              onClick={handleSubmit}
+            >
+              {pending ? "Working..." : "Update password"}
+            </Button>
           </div>
-        </form>
+        </div>
       ) : null}
     </div>
   );

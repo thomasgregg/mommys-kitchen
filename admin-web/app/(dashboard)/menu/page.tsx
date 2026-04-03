@@ -28,13 +28,22 @@ export default async function MenuPage({
 }: {
   searchParams: Promise<{ q?: string; availability?: string; category?: string; featured?: string }>;
 }) {
-  const { supabase } = await requireAdmin();
-  const settings = await getAppSettings();
+  const { supabase, profile } = await requireAdmin();
+  const settings = await getAppSettings(profile.tenant_id);
   const params = await searchParams;
 
   const [{ data: categories }, { data: items }] = await Promise.all([
-    supabase.from("menu_categories").select("*").order("sort_order", { ascending: true }).returns<MenuCategory[]>(),
-    supabase.from("menu_items").select("*").returns<MenuItem[]>(),
+    supabase
+      .from("menu_categories")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .order("sort_order", { ascending: true })
+      .returns<MenuCategory[]>(),
+    supabase
+      .from("menu_items")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .returns<MenuItem[]>(),
   ]);
 
   const categoryById = new Map((categories ?? []).map((category) => [category.id, category.name]));

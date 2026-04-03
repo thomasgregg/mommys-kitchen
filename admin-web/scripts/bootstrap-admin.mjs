@@ -53,6 +53,16 @@ async function findUserByEmail(email) {
 }
 
 async function ensureAdminUser() {
+  const { data: defaultTenant, error: tenantError } = await supabase
+    .from("tenants")
+    .select("id")
+    .eq("is_default", true)
+    .single();
+
+  if (tenantError || !defaultTenant) {
+    throw tenantError ?? new Error("Default tenant not found.");
+  }
+
   let user = await findUserByEmail(adminEmail);
 
   if (!user) {
@@ -81,6 +91,7 @@ async function ensureAdminUser() {
     .upsert(
       {
         id: user.id,
+        tenant_id: defaultTenant.id,
         full_name: adminFullName,
         phone: adminPhone,
         role: "admin",

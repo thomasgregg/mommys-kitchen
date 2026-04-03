@@ -1,13 +1,16 @@
 import Foundation
 import Supabase
 
-final class SupabaseService {
+final class SupabaseService: @unchecked Sendable {
     let client: SupabaseClient
 
     init() {
         client = SupabaseClient(
             supabaseURL: AppConfig.supabaseURL,
-            supabaseKey: AppConfig.supabaseAnonKey
+            supabaseKey: AppConfig.supabaseAnonKey,
+            options: SupabaseClientOptions(
+                auth: .init(emitLocalSessionAsInitialSession: true)
+            )
         )
     }
 

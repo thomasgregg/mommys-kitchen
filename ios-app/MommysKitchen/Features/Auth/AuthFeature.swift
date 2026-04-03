@@ -2,16 +2,6 @@ import SwiftUI
 
 @MainActor
 final class AuthViewModel: ObservableObject {
-    enum Mode: String, CaseIterable, Identifiable {
-        case signIn = "Sign In"
-        case signUp = "Sign Up"
-
-        var id: String { rawValue }
-    }
-
-    @Published var mode: Mode = .signIn
-    @Published var fullName = ""
-    @Published var phone = ""
     @Published var email = ""
     @Published var password = ""
     @Published var isSubmitting = false
@@ -25,31 +15,16 @@ final class AuthViewModel: ObservableObject {
     func submit() async {
         authManager.errorMessage = nil
 
-        switch mode {
-        case .signIn:
-            guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !password.isEmpty else {
-                authManager.errorMessage = "Enter your email and password to sign in."
-                return
-            }
-        case .signUp:
-            guard !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !password.isEmpty else {
-                authManager.errorMessage = "Fill in your name, email, and password to create an account."
-                return
-            }
+        guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !password.isEmpty else {
+            authManager.errorMessage = "Enter your email and password to sign in."
+            return
         }
 
         isSubmitting = true
         defer { isSubmitting = false }
 
-        switch mode {
-        case .signIn:
-            await authManager.signIn(email: email, password: password)
-        case .signUp:
-            await authManager.signUp(fullName: fullName, phone: phone, email: email, password: password)
-        }
+        await authManager.signIn(email: email, password: password)
     }
 }
 
@@ -87,25 +62,7 @@ struct AuthView: View {
                 }
                 .listRowBackground(Color.clear)
 
-                Section {
-                    Picker("Mode", selection: $viewModel.mode) {
-                        ForEach(AuthViewModel.Mode.allCases) { mode in
-                            Text(mode.rawValue).tag(mode)
-                        }
-                    }
-                    .font(.headline)
-                    .controlSize(.large)
-                    .pickerStyle(.segmented)
-                }
-
-                Section(viewModel.mode == .signUp ? "Your details" : "Welcome back") {
-                    if viewModel.mode == .signUp {
-                        TextField("Full name", text: $viewModel.fullName)
-                            .textInputAutocapitalization(.words)
-                        TextField("Phone", text: $viewModel.phone)
-                            .keyboardType(.phonePad)
-                    }
-
+                Section("Welcome back") {
                     TextField("Email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
@@ -113,7 +70,13 @@ struct AuthView: View {
                         .textContentType(.emailAddress)
 
                     SecureField("Password", text: $viewModel.password)
-                        .textContentType(viewModel.mode == .signUp ? .newPassword : .password)
+                        .textContentType(.password)
+                }
+
+                Section {
+                    Text("Need an account? Ask your family admin.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 if let errorMessage = authManager.errorMessage {
@@ -163,10 +126,6 @@ struct AuthView: View {
                 }
             }
             #endif
-            .onChange(of: viewModel.mode) { _, _ in
-                authManager.errorMessage = nil
-                viewModel.password = ""
-            }
             .safeAreaInset(edge: .bottom) {
                 Button {
                     Task { await viewModel.submit() }
@@ -174,7 +133,7 @@ struct AuthView: View {
                     if viewModel.isSubmitting {
                         ProgressView().tint(.white)
                     } else {
-                        Text(viewModel.mode.rawValue)
+                        Text("Sign In")
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle())

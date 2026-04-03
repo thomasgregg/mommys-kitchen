@@ -14,7 +14,7 @@ export async function createUserAction(
   formData: FormData,
 ) {
   try {
-    await requireAdmin();
+    const { profile: currentProfile } = await requireAdmin();
 
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const password = String(formData.get("password") ?? "").trim();
@@ -58,6 +58,7 @@ export async function createUserAction(
       .upsert(
         {
           id: data.user.id,
+          tenant_id: currentProfile.tenant_id,
           full_name: fullName,
           phone,
           role,
@@ -86,7 +87,7 @@ export async function updateUserProfileAction(
   formData: FormData,
 ) {
   try {
-    await requireAdmin();
+    const { profile: currentProfile } = await requireAdmin();
 
     const id = String(formData.get("id") ?? "").trim();
     const fullName = String(formData.get("fullName") ?? "").trim() || null;
@@ -110,7 +111,8 @@ export async function updateUserProfileAction(
         role,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("tenant_id", currentProfile.tenant_id);
 
     if (error) {
       return { status: "error" as const, message: error.message };
@@ -134,7 +136,7 @@ export async function updateUserPasswordAction(
   formData: FormData,
 ) {
   try {
-    await requireAdmin();
+    const { profile: currentProfile } = await requireAdmin();
 
     const id = String(formData.get("id") ?? "").trim();
     const password = String(formData.get("password") ?? "");
@@ -157,6 +159,17 @@ export async function updateUserPasswordAction(
     }
 
     const supabaseAdmin = createSupabaseAdminClient();
+    const { data: existingProfile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", id)
+      .eq("tenant_id", currentProfile.tenant_id)
+      .maybeSingle<{ id: string }>();
+
+    if (profileError || !existingProfile) {
+      return { status: "error" as const, message: "User not found in this tenant." };
+    }
+
     const { error } = await supabaseAdmin.auth.admin.updateUserById(id, {
       password,
     });
@@ -178,12 +191,17 @@ export async function updateUserPasswordAction(
 }
 
 export async function deleteUserAction(formData: FormData) {
-  const { user } = await requireAdmin();
+  const { user, profile: currentProfile } = await requireAdmin();
 
   const id = String(formData.get("id") ?? "").trim();
+  const tenantId = String(formData.get("tenantId") ?? "").trim();
 
   if (!id) {
     throw new Error("Missing user id.");
+  }
+
+  if (!tenantId || tenantId != currentProfile.tenant_id) {
+    throw new Error("Invalid tenant context.");
   }
 
   if (id === user.id) {
@@ -195,11 +213,22 @@ export async function deleteUserAction(formData: FormData) {
   }
 
   const supabaseAdmin = createSupabaseAdminClient();
+  const { data: targetProfile, error: targetProfileError } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", currentProfile.tenant_id)
+    .maybeSingle<{ id: string }>();
+
+  if (targetProfileError || !targetProfile) {
+    throw new Error("User not found in this tenant.");
+  }
 
   const { error: deviceTokenError } = await supabaseAdmin
     .from("device_tokens")
     .delete()
-    .eq("user_id", id);
+    .eq("user_id", id)
+    .eq("tenant_id", currentProfile.tenant_id);
 
   if (deviceTokenError) {
     throw new Error(deviceTokenError.message);
@@ -208,7 +237,8 @@ export async function deleteUserAction(formData: FormData) {
   const { error: notificationError } = await supabaseAdmin
     .from("notifications")
     .delete()
-    .eq("user_id", id);
+    .eq("user_id", id)
+    .eq("tenant_id", currentProfile.tenant_id);
 
   if (notificationError) {
     throw new Error(notificationError.message);
@@ -222,7 +252,8 @@ export async function deleteUserAction(formData: FormData) {
       role: "customer",
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", currentProfile.tenant_id);
 
   if (profileError) {
     throw new Error(profileError.message);

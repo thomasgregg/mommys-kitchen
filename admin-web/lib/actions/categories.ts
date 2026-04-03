@@ -15,11 +15,13 @@ export async function submitMenuCategoryAction(
   formData: FormData,
 ) {
   try {
+    const { profile } = await requireAdmin();
     const supabase = await createSupabaseServerClient();
     const id = String(formData.get("id") ?? "").trim();
 
     const payload = {
       ...(id ? { id } : {}),
+      tenant_id: profile.tenant_id,
       name: String(formData.get("name") ?? "").trim(),
       sort_order: Number(formData.get("sortOrder") ?? 0),
       is_active: formData.get("isActive") === "on",
@@ -51,6 +53,7 @@ export async function submitMenuCategoryAction(
 }
 
 export async function toggleMenuCategoryAction(formData: FormData) {
+  const { profile } = await requireAdmin();
   const supabase = await createSupabaseServerClient();
   const id = String(formData.get("id") ?? "").trim();
   const isActive = formData.get("isActive") === "true";
@@ -65,7 +68,8 @@ export async function toggleMenuCategoryAction(formData: FormData) {
       is_active: !isActive,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", profile.tenant_id);
 
   if (error) {
     throw new Error(error.message);
@@ -81,7 +85,7 @@ export async function toggleMenuCategoryAction(formData: FormData) {
 }
 
 export async function deleteMenuCategoryAction(formData: FormData) {
-  await requireAdmin();
+  const { profile } = await requireAdmin();
   const supabase = await createSupabaseServerClient();
   const id = String(formData.get("id") ?? "").trim();
 
@@ -93,7 +97,8 @@ export async function deleteMenuCategoryAction(formData: FormData) {
   const { count, error: countError } = await supabase
     .from("menu_items")
     .select("id", { count: "exact", head: true })
-    .eq("category_id", id);
+    .eq("category_id", id)
+    .eq("tenant_id", profile.tenant_id);
 
   if (countError) {
     await setFlashToast({ type: "error", message: countError.message });
@@ -105,7 +110,11 @@ export async function deleteMenuCategoryAction(formData: FormData) {
     redirect("/categories");
   }
 
-  const { error } = await supabase.from("menu_categories").delete().eq("id", id);
+  const { error } = await supabase
+    .from("menu_categories")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", profile.tenant_id);
 
   if (error) {
     await setFlashToast({ type: "error", message: error.message });

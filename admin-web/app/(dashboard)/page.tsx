@@ -2,12 +2,14 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { OrdersOverTimeChart } from "@/components/dashboard/orders-over-time-chart";
+import { OnboardingChecklistCard } from "@/components/onboarding/onboarding-checklist-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getAppSettings } from "@/lib/data/app-settings";
+import { getOnboardingSnapshot } from "@/lib/data/onboarding";
 import type { OrderRecord, OrderStatus } from "@/lib/types/app";
 import { cn } from "@/lib/utils";
 import { statusBadgeClass, statusLabel } from "@/lib/utils/admin-ui";
@@ -36,13 +38,17 @@ export default async function DashboardPage({
 }) {
   const params = await searchParams;
   const { supabase, profile, user } = await requireAdmin();
-  const settings = await getAppSettings();
+  const [settings, onboarding] = await Promise.all([
+    getAppSettings(profile.tenant_id),
+    getOnboardingSnapshot(profile.tenant_id),
+  ]);
   const rangeValue = normalizeRange(params.range);
   const displayName = profile.full_name?.trim() || fallbackNameFromEmail(user.email);
 
   const { data: orders, error } = await supabase
     .from("orders")
     .select("id, order_number, status, created_at, placed_at, accepted_at, ready_at, completed_at, total_cents")
+    .eq("tenant_id", profile.tenant_id)
     .order("created_at", { ascending: false })
     .limit(1000)
     .returns<DashboardOrder[]>();
@@ -57,6 +63,8 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-4">
+      <OnboardingChecklistCard snapshot={onboarding} />
+
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">

@@ -20,6 +20,7 @@ final class AuthManager: ObservableObject {
     private let requiredRole: Profile.Role?
     private let roleMismatchMessage: String?
     private var authTask: Task<Void, Never>?
+    private var authStateChangeListener: (any AuthStateChangeListenerRegistration)?
 
     init(
         supabase: SupabaseService,
@@ -37,26 +38,29 @@ final class AuthManager: ObservableObject {
 
     func start() {
         authTask?.cancel()
+        authStateChangeListener?.remove()
+        authStateChangeListener = nil
         authTask = Task {
-            await restoreSession()
-            for await (_, session) in supabase.client.auth.authStateChanges {
-                await handleSession(session?.user)
+            let listener = await supabase.client.auth.onAuthStateChange { [weak self] _, session in
+                Task { @MainActor [weak self] in
+                    await self?.handleSession(session?.user)
+                }
             }
+
+            guard !Task.isCancelled else {
+                listener.remove()
+                return
+            }
+
+            authStateChangeListener = listener
         }
     }
 
     func stop() {
         authTask?.cancel()
         authTask = nil
-    }
-
-    func restoreSession() async {
-        do {
-            let session = try await supabase.client.auth.session
-            await handleSession(session.user)
-        } catch {
-            state = .signedOut
-        }
+        authStateChangeListener?.remove()
+        authStateChangeListener = nil
     }
 
     func signIn(email: String, password: String) async {
@@ -80,6 +84,12 @@ final class AuthManager: ObservableObject {
             let trimmedPhone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmedPhone.isEmpty {
                 metadata["phone"] = .string(trimmedPhone)
+            }
+            if let tenantSlug = AppConfig.tenantSlug {
+                metadata["tenant_slug"] = .string(tenantSlug)
+            }
+            if let tenantName = AppConfig.tenantName {
+                metadata["tenant_name"] = .string(tenantName)
             }
             let response = try await supabase.client.auth.signUp(email: email, password: password, data: metadata)
             if let session = response.session {
@@ -145,10 +155,8 @@ final class AuthManager: ObservableObject {
 
         state = .signedIn(user)
         do {
-            async let profileRequest = profileRepository.fetchCurrentProfile(userID: user.id)
-            async let settingsRequest = appSettingsStore.refresh()
-            let fetchedProfile = try await profileRequest
-            _ = await settingsRequest
+            let fetchedProfile = try await profileRepository.fetchCurrentProfile(userID: user.id)
+            await appSettingsStore.refresh()
             if let requiredRole, fetchedProfile.role != requiredRole {
                 profile = nil
                 state = .signedOut

@@ -18,9 +18,34 @@ export type AppSettings = {
 
 export type Profile = {
   id: string;
+  tenant_id: string;
   full_name: string | null;
   phone: string | null;
   role: ProfileRole;
+};
+
+export type TenantSummary = {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+};
+
+export type OnboardingSnapshot = {
+  customerCount: number;
+  categoryCount: number;
+  itemCount: number;
+  orderCount: number;
+  settingsReviewedAt: string | null;
+  onboardingCompletedAt: string | null;
+  membersReady: boolean;
+  menuReady: boolean;
+  settingsReady: boolean;
+  testOrderReady: boolean;
+  completedSteps: number;
+  totalSteps: number;
+  isComplete: boolean;
+  nextStep: 2 | 3 | 4 | 5;
 };
 
 export type MenuCategory = {

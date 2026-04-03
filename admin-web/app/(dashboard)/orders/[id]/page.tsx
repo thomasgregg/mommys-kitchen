@@ -15,20 +15,36 @@ import { statusBadgeClass, statusLabel } from "@/lib/utils/admin-ui";
 import { formatCurrency, formatDate } from "@/lib/utils/currency";
 
 async function loadOrder(id: string): Promise<OrderRecord | null> {
-  const { supabase } = await requireAdmin();
+  const { supabase, profile } = await requireAdmin();
 
-  const { data: order } = await supabase.from("orders").select("*").eq("id", id).single();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", id)
+    .eq("tenant_id", profile.tenant_id)
+    .single();
   if (!order) return null;
 
   const [{ data: items }, { data: history }, { data: customer }] = await Promise.all([
-    supabase.from("order_items").select("*").eq("order_id", id).returns<OrderItem[]>(),
+    supabase
+      .from("order_items")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .eq("order_id", id)
+      .returns<OrderItem[]>(),
     supabase
       .from("order_status_history")
       .select("*")
+      .eq("tenant_id", profile.tenant_id)
       .eq("order_id", id)
       .order("created_at", { ascending: true })
       .returns<OrderHistoryEntry[]>(),
-    supabase.from("profiles").select("id, full_name, phone, role").eq("id", order.user_id).single<Profile>(),
+    supabase
+      .from("profiles")
+      .select("id, tenant_id, full_name, phone, role")
+      .eq("id", order.user_id)
+      .eq("tenant_id", profile.tenant_id)
+      .single<Profile>(),
   ]);
 
   return {
@@ -41,7 +57,8 @@ async function loadOrder(id: string): Promise<OrderRecord | null> {
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const settings = await getAppSettings();
+  const { profile } = await requireAdmin();
+  const settings = await getAppSettings(profile.tenant_id);
   const order = await loadOrder(id);
 
   if (!order) {

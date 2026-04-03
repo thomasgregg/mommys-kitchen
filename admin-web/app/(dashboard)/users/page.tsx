@@ -66,17 +66,19 @@ export default async function UsersPage({
   searchParams: Promise<{ q?: string; role?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase, user: currentUser } = await requireAdmin();
+  const { supabase, user: currentUser, profile: currentProfile } = await requireAdmin();
 
   const [{ data: profiles, error: profilesError }, { data: orders, error: ordersError }, authUsers] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, phone, role")
+      .select("id, tenant_id, full_name, phone, role")
+      .eq("tenant_id", currentProfile.tenant_id)
       .order("full_name", { ascending: true })
       .returns<Profile[]>(),
     supabase
       .from("orders")
       .select("id, user_id, order_number, created_at, status")
+      .eq("tenant_id", currentProfile.tenant_id)
       .order("created_at", { ascending: false })
       .returns<Pick<OrderRecord, "id" | "user_id" | "order_number" | "created_at" | "status">[]>(),
     listAuthUsers(),
@@ -226,7 +228,7 @@ export default async function UsersPage({
                           }
                           confirmLabel="Delete user"
                           action={deleteUserAction}
-                          values={{ id: user.id }}
+                          values={{ id: user.id, tenantId: currentProfile.tenant_id }}
                           triggerLabel="Delete"
                           disabled={user.id === currentUser.id}
                         />

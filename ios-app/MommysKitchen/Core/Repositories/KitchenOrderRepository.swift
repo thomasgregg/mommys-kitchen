@@ -8,7 +8,7 @@ struct KitchenOrderRecord: Codable, Identifiable, Hashable, Sendable {
     var id: UUID { order.id }
 }
 
-struct KitchenOrderRepository {
+struct KitchenOrderRepository: Sendable {
     private struct ErrorResponse: Decodable {
         let error: String
     }

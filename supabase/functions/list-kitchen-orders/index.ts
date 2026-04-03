@@ -22,7 +22,7 @@ Deno.serve(async (request) => {
 
     const { data: profile, error: profileError } = await adminClient
       .from("profiles")
-      .select("role")
+      .select("role, tenant_id")
       .eq("id", userData.user.id)
       .single();
 
@@ -43,6 +43,7 @@ Deno.serve(async (request) => {
     const { data: orders, error: ordersError } = await adminClient
       .from("orders")
       .select("*, order_items(*), order_status_history(*)")
+      .eq("tenant_id", profile.tenant_id)
       .order("created_at", { ascending: false });
 
     if (ordersError) {
@@ -54,7 +55,8 @@ Deno.serve(async (request) => {
       ? { data: [], error: null }
       : await adminClient
         .from("profiles")
-        .select("id, full_name, phone, role, created_at, updated_at")
+        .select("id, tenant_id, full_name, phone, role, created_at, updated_at")
+        .eq("tenant_id", profile.tenant_id)
         .in("id", userIds);
 
     if (profilesError) {

@@ -7,6 +7,7 @@ struct Profile: Codable, Identifiable, Hashable, Sendable {
     }
 
     let id: UUID
+    let tenantId: UUID?
     let fullName: String?
     let phone: String?
     let role: Role
@@ -15,6 +16,7 @@ struct Profile: Codable, Identifiable, Hashable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case tenantId = "tenant_id"
         case fullName = "full_name"
         case phone
         case role

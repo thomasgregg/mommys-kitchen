@@ -26,17 +26,19 @@ export default async function CategoriesPage({
   searchParams: Promise<{ q?: string; visibility?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase } = await requireAdmin();
+  const { supabase, profile } = await requireAdmin();
 
   const [{ data: categories, error: categoriesError }, { data: items, error: itemsError }] = await Promise.all([
     supabase
       .from("menu_categories")
       .select("*")
+      .eq("tenant_id", profile.tenant_id)
       .order("sort_order", { ascending: true })
       .returns<MenuCategory[]>(),
     supabase
       .from("menu_items")
       .select("id, category_id")
+      .eq("tenant_id", profile.tenant_id)
       .returns<Pick<MenuItem, "id" | "category_id">[]>(),
   ]);
 

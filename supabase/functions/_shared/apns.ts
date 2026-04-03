@@ -17,6 +17,7 @@ type NotificationType =
   | "order_rejected";
 
 type TokenRecord = {
+  tenant_id: string;
   user_id: string;
   device_token: string;
   app_target: AppTarget;
@@ -24,6 +25,7 @@ type TokenRecord = {
 };
 
 type PushMessage = {
+  tenantId: string;
   type: NotificationType;
   title: string;
   body: string;
@@ -114,6 +116,7 @@ async function recordNotification(
   responseText: string,
 ) {
   await adminClient.from("notifications").insert({
+    tenant_id: message.tenantId,
     user_id: token.user_id,
     order_id: message.orderId,
     type: message.type,
@@ -142,8 +145,9 @@ async function sendPushMessage(message: PushMessage) {
   const adminClient = createAdminClient();
   const { data: tokens, error: tokenError } = await adminClient
     .from("device_tokens")
-    .select("user_id, device_token, app_target, push_environment")
+    .select("tenant_id, user_id, device_token, app_target, push_environment")
     .in("user_id", message.userIds)
+    .eq("tenant_id", message.tenantId)
     .eq("app_target", message.appTarget);
 
   if (tokenError) {
@@ -213,10 +217,12 @@ export async function sendCustomerOrderStatusPush({
   userId,
   orderId,
   status,
+  tenantId,
 }: {
   userId: string;
   orderId: string;
   status: string;
+  tenantId: string;
 }) {
   if (!isNotifiableStatus(status)) {
     return;
@@ -225,6 +231,7 @@ export async function sendCustomerOrderStatusPush({
   const definition = customerStatusNotificationMap[status];
   await sendPushMessage({
     userIds: [userId],
+    tenantId,
     orderId,
     appTarget: "customer_ios",
     status,
@@ -235,9 +242,11 @@ export async function sendCustomerOrderStatusPush({
 }
 
 export async function sendMommyOrderPlacedPush({
+  tenantId,
   orderId,
   orderNumber,
 }: {
+  tenantId: string;
   orderId: string;
   orderNumber: string;
 }) {
@@ -245,6 +254,7 @@ export async function sendMommyOrderPlacedPush({
   const { data: admins, error } = await adminClient
     .from("profiles")
     .select("id")
+    .eq("tenant_id", tenantId)
     .eq("role", "admin");
 
   if (error) {
@@ -258,6 +268,7 @@ export async function sendMommyOrderPlacedPush({
 
   await sendPushMessage({
     userIds,
+    tenantId,
     orderId,
     appTarget: "mommy_ios",
     type: mommyOrderPlacedNotification.type,

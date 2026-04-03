@@ -8,9 +8,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { signInAction } from "@/lib/actions/auth";
+import { signUpTenantAction } from "@/lib/actions/auth";
 
-export function LoginForm({ error, message }: { error?: string; message?: string }) {
+export function SignupForm({ error }: { error?: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const safeError =
     typeof error === "string" && error.trim() && error !== "{}" && error !== "[object Object]"
@@ -21,18 +21,18 @@ export function LoginForm({ error, message }: { error?: string; message?: string
     <Card className="mx-auto w-full max-w-lg border-border/80 bg-card shadow-sm">
       <CardHeader className="gap-3 border-b border-border/70 px-5 py-6 text-center">
         <div className="flex w-full justify-center">
-          <BrandMark className="!size-14" />
+          <BrandMark className="!size-14" src="/brand/mommys-kitchen-mark-navy.svg" />
         </div>
         <div className="flex flex-col gap-2">
-          <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Mommy&apos;s Kitchen Admin</CardTitle>
-          <CardDescription className="text-sm">Sign in to continue to the dashboard.</CardDescription>
+          <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Create a family</CardTitle>
+          <CardDescription className="text-sm">Set up your family kitchen and become the first admin automatically.</CardDescription>
         </div>
       </CardHeader>
 
       <CardContent className="px-5 py-6">
         <form
           ref={formRef}
-          action={signInAction}
+          action={signUpTenantAction}
           className="flex flex-col gap-4"
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
@@ -41,6 +41,29 @@ export function LoginForm({ error, message }: { error?: string; message?: string
             }
           }}
         >
+          <div className="flex flex-col gap-2.5">
+            <label htmlFor="tenantName" className="text-sm font-medium text-foreground">
+              Family name
+            </label>
+            <Input id="tenantName" name="tenantName" required placeholder="The Smith Family" className="h-11 bg-background px-4" />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2.5">
+              <label htmlFor="fullName" className="text-sm font-medium text-foreground">
+                Your name
+              </label>
+              <Input id="fullName" name="fullName" required placeholder="Peter" className="h-11 bg-background px-4" />
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              <label htmlFor="phone" className="text-sm font-medium text-foreground">
+                Phone
+              </label>
+              <Input id="phone" name="phone" placeholder="+49 ..." className="h-11 bg-background px-4" />
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2.5">
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               Email
@@ -52,32 +75,25 @@ export function LoginForm({ error, message }: { error?: string; message?: string
             <label htmlFor="password" className="text-sm font-medium text-foreground">
               Password
             </label>
-            <Input id="password" name="password" type="password" required placeholder="Enter your password" className="h-11 bg-background px-4" />
+            <Input id="password" name="password" type="password" required minLength={8} placeholder="At least 8 characters" className="h-11 bg-background px-4" />
           </div>
 
           {safeError ? (
             <Alert variant="destructive">
-              <AlertTitle>Sign-in failed</AlertTitle>
+              <AlertTitle>Setup failed</AlertTitle>
               <AlertDescription>{safeError}</AlertDescription>
             </Alert>
           ) : null}
 
-          {!safeError && message ? (
-            <Alert>
-              <AlertTitle>Ready to sign in</AlertTitle>
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          ) : null}
-
           <Button type="submit" variant="outline" size="lg" className="mt-1 w-full justify-center text-base">
-            Sign in
+            Create family
             <ArrowRight data-icon="inline-end" />
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
-            New family?{" "}
-            <Link href="/signup" className="font-medium text-foreground underline-offset-4 hover:underline">
-              Create one
+            Already have a family?{" "}
+            <Link href="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Sign in
             </Link>
           </div>
         </form>

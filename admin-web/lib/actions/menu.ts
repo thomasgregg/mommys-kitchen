@@ -17,7 +17,7 @@ export async function submitMenuItemAction(
   formData: FormData,
 ) {
   try {
-    await requireAdmin();
+    const { profile } = await requireAdmin();
     const supabase = await createSupabaseServerClient();
     const supabaseAdmin = createSupabaseAdminClient();
     const id = String(formData.get("id") ?? "").trim();
@@ -28,6 +28,7 @@ export async function submitMenuItemAction(
 
     const payload = {
       id: menuItemId,
+      tenant_id: profile.tenant_id,
       category_id: String(formData.get("categoryId") ?? ""),
       name: String(formData.get("name") ?? ""),
       description: String(formData.get("description") ?? ""),
@@ -92,7 +93,8 @@ export async function submitMenuItemAction(
       const { error: updateImageError } = await supabase
         .from("menu_items")
         .update({ image_url: nextImageUrl, updated_at: new Date().toISOString() })
-        .eq("id", menuItemId);
+        .eq("id", menuItemId)
+        .eq("tenant_id", profile.tenant_id);
 
       if (updateImageError) {
         if (uploadedStoragePath) {
@@ -122,7 +124,7 @@ export async function submitMenuItemAction(
 }
 
 export async function deleteMenuItemAction(formData: FormData) {
-  await requireAdmin();
+  const { profile } = await requireAdmin();
 
   const id = String(formData.get("id") ?? "").trim();
 
@@ -138,6 +140,7 @@ export async function deleteMenuItemAction(formData: FormData) {
     .from("menu_items")
     .select("image_url")
     .eq("id", id)
+    .eq("tenant_id", profile.tenant_id)
     .single<{ image_url: string | null }>();
 
   if (existingItemError) {
@@ -145,7 +148,11 @@ export async function deleteMenuItemAction(formData: FormData) {
     redirect("/menu");
   }
 
-  const { error } = await supabase.from("menu_items").delete().eq("id", id);
+  const { error } = await supabase
+    .from("menu_items")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", profile.tenant_id);
 
   if (error) {
     await setFlashToast({ type: "error", message: error.message });
@@ -164,6 +171,7 @@ export async function deleteMenuItemAction(formData: FormData) {
 }
 
 export async function toggleMenuAvailabilityAction(formData: FormData) {
+  const { profile } = await requireAdmin();
   const supabase = await createSupabaseServerClient();
   const id = String(formData.get("id") ?? "");
   const isAvailable = formData.get("isAvailable") === "true";
@@ -171,7 +179,8 @@ export async function toggleMenuAvailabilityAction(formData: FormData) {
   const { error } = await supabase
     .from("menu_items")
     .update({ is_available: !isAvailable })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", profile.tenant_id);
 
   if (error) {
     throw new Error(error.message);

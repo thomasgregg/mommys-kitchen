@@ -56,6 +56,7 @@ final class PushNotificationManager: NSObject, ObservableObject {
     private func registerIfPossible(token: String) {
         pendingDeviceToken = token
         guard authManager?.currentUser != nil, let orderRepository else { return }
+        let appTarget = appTarget
         Task {
             try? await orderRepository.registerDeviceToken(
                 token: token,
@@ -91,8 +92,11 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        let rawOrderID = response.notification.request.content.userInfo["order_id"] as? String
         Task { @MainActor in
-            self.handleNotification(userInfo: response.notification.request.content.userInfo)
+            if let rawOrderID, let orderID = UUID(uuidString: rawOrderID) {
+                self.lastOpenedOrderID = orderID
+            }
         }
         completionHandler()
     }

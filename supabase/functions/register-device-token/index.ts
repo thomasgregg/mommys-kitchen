@@ -38,10 +38,21 @@ Deno.serve(async (request) => {
       );
     }
 
+    const { data: profile, error: profileError } = await adminClient
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", userData.user.id)
+      .single();
+
+    if (profileError || !profile?.tenant_id) {
+      throw profileError ?? new Error("Profile tenant not found");
+    }
+
     const { data, error } = await adminClient
       .from("device_tokens")
       .upsert(
         {
+          tenant_id: profile.tenant_id,
           user_id: userData.user.id,
           device_token: body.device_token,
           platform: body.platform ?? "ios",

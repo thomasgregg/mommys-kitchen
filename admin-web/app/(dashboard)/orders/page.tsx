@@ -26,11 +26,12 @@ import { formatCurrency, formatDate } from "@/lib/utils/currency";
 const queueStatuses: OrderStatus[] = ["placed", "accepted", "preparing", "ready"];
 
 async function loadQueueOrders(): Promise<OrderRecord[]> {
-  const { supabase } = await requireAdmin();
+  const { supabase, profile } = await requireAdmin();
 
   const { data: orders, error } = await supabase
     .from("orders")
     .select("*")
+    .eq("tenant_id", profile.tenant_id)
     .in("status", queueStatuses)
     .order("created_at", { ascending: false });
 
@@ -42,9 +43,24 @@ async function loadQueueOrders(): Promise<OrderRecord[]> {
   const userIds = [...new Set(orders.map((order) => order.user_id))];
 
   const [{ data: items }, { data: history }, { data: profiles }] = await Promise.all([
-    supabase.from("order_items").select("*").in("order_id", orderIds).returns<OrderItem[]>(),
-    supabase.from("order_status_history").select("*").in("order_id", orderIds).returns<OrderHistoryEntry[]>(),
-    supabase.from("profiles").select("id, full_name, phone, role").in("id", userIds).returns<Profile[]>(),
+    supabase
+      .from("order_items")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .in("order_id", orderIds)
+      .returns<OrderItem[]>(),
+    supabase
+      .from("order_status_history")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .in("order_id", orderIds)
+      .returns<OrderHistoryEntry[]>(),
+    supabase
+      .from("profiles")
+      .select("id, tenant_id, full_name, phone, role")
+      .eq("tenant_id", profile.tenant_id)
+      .in("id", userIds)
+      .returns<Profile[]>(),
   ]);
 
   return orders.map((order) => ({
@@ -61,7 +77,8 @@ export default async function OrdersQueuePage({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const settings = await getAppSettings();
+  const { profile } = await requireAdmin();
+  const settings = await getAppSettings(profile.tenant_id);
   const orders = await loadQueueOrders();
   const query = (params.q ?? "").trim().toLowerCase();
   const statusFilterParam = (params.status ?? "").trim();

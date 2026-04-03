@@ -29,7 +29,7 @@ Deno.serve(async (request) => {
 
     const { data: profile, error: profileError } = await adminClient
       .from("profiles")
-      .select("role")
+      .select("role, tenant_id")
       .eq("id", userData.user.id)
       .single();
 
@@ -70,6 +70,7 @@ Deno.serve(async (request) => {
       try {
         await sendCustomerOrderStatusPush({
           userId: updatedOrder.user_id,
+          tenantId: updatedOrder.tenant_id,
           orderId: updatedOrder.id,
           status: updatedOrder.status,
         });

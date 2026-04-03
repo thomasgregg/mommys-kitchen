@@ -27,12 +27,13 @@ export default async function OrdersHistoryPage({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase } = await requireAdmin();
-  const settings = await getAppSettings();
+  const { supabase, profile } = await requireAdmin();
+  const settings = await getAppSettings(profile.tenant_id);
 
   const { data: orders, error } = await supabase
     .from("orders")
     .select("id, order_number, status, total_cents, created_at")
+    .eq("tenant_id", profile.tenant_id)
     .in("status", terminalStatuses)
     .order("created_at", { ascending: false });
 

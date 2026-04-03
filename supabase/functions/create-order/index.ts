@@ -74,6 +74,7 @@ Deno.serve(async (request) => {
 
     try {
       await sendMommyOrderPlacedPush({
+        tenantId: fullOrder.tenant_id,
         orderId: fullOrder.id,
         orderNumber: fullOrder.order_number,
       });

@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 enum Formatters {
     private static var currencyCode = "EUR"
     private static var localeIdentifier = "de_DE"

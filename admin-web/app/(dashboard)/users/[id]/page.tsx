@@ -26,16 +26,22 @@ type UserOrderSummary = Pick<
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { supabase } = await requireAdmin();
+  const { supabase, profile: currentProfile } = await requireAdmin();
   const supabaseAdmin = createSupabaseAdminClient();
-  const settings = await getAppSettings();
+  const settings = await getAppSettings(currentProfile.tenant_id);
 
   const [{ data: profile }, { data: orders, error: ordersError }, { data: authUserData, error: authUserError }] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, phone, role").eq("id", id).single<Profile>(),
+    supabase
+      .from("profiles")
+      .select("id, tenant_id, full_name, phone, role")
+      .eq("id", id)
+      .eq("tenant_id", currentProfile.tenant_id)
+      .single<Profile>(),
     supabase
       .from("orders")
       .select("id, order_number, status, created_at, total_cents, notes")
       .eq("user_id", id)
+      .eq("tenant_id", currentProfile.tenant_id)
       .order("created_at", { ascending: false })
       .returns<UserOrderSummary[]>(),
     supabaseAdmin.auth.admin.getUserById(id),

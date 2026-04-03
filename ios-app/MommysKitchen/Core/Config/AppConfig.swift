@@ -138,6 +138,32 @@ enum AppConfig {
         currentBackend.anonKey
     }
 
+    static var tenantSlug: String? {
+        guard let slug = Bundle.main.object(forInfoDictionaryKey: "TENANT_SLUG") as? String else {
+            return nil
+        }
+
+        let trimmed = slug.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != "$(TENANT_SLUG)" else {
+            return nil
+        }
+
+        return trimmed
+    }
+
+    static var tenantName: String? {
+        guard let name = Bundle.main.object(forInfoDictionaryKey: "TENANT_NAME") as? String else {
+            return nil
+        }
+
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != "$(TENANT_NAME)" else {
+            return nil
+        }
+
+        return trimmed
+    }
+
     static func saveBackendMode(_ mode: BackendMode) {
         UserDefaults.standard.set(mode.rawValue, forKey: backendModeKey)
     }
