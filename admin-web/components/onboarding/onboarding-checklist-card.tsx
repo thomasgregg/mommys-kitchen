@@ -17,7 +17,13 @@ export function OnboardingChecklistCard({ snapshot }: { snapshot: OnboardingSnap
           Finish the quick onboarding checklist so your family can place its first order with confidence.
         </CardDescription>
         <CardAction>
-          <Button render={<Link href={`/onboarding?step=${snapshot.nextStep}`} />} nativeButton={false} variant="ghost" size="sm">
+          <Button
+            render={<Link href={`/onboarding?step=${snapshot.nextStep}`} />}
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+            className="whitespace-nowrap bg-[#D97745] text-white hover:bg-[#C56B3F] hover:text-white"
+          >
             Resume setup
             <ArrowRight data-icon="inline-end" />
           </Button>
