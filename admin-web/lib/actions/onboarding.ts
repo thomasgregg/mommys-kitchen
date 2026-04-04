@@ -76,7 +76,7 @@ const sampleItems = [
     category: "Drinks",
     name: "Apple Juice",
     description: "Chilled apple juice served in a small family-size glass.",
-    image_url: "/sample-menu/apple-juice.jpg",
+    image_url: "/sample-menu/apple-juice-photo.jpg",
     price_cents: 299,
     prep_minutes: 1,
     is_featured: false,
@@ -91,6 +91,23 @@ const sampleItems = [
     is_featured: false,
   },
 ] as const;
+
+function resolveSampleImageUrl(
+  imageUrl: string,
+  supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>,
+) {
+  if (!imageUrl.startsWith("/sample-menu/")) {
+    return imageUrl;
+  }
+
+  const fileName = imageUrl.split("/").pop();
+
+  if (!fileName) {
+    return imageUrl;
+  }
+
+  return supabaseAdmin.storage.from("menu-images").getPublicUrl(`sample-menu/${fileName}`).data.publicUrl;
+}
 
 export async function addFamilyMemberOnboardingAction(_previousState: ActionState, formData: FormData) {
   try {
@@ -214,7 +231,7 @@ export async function seedSampleMenuAction(formData: FormData) {
       category_id: categoryIdByName.get(item.category),
       name: item.name,
       description: item.description,
-      image_url: item.image_url,
+      image_url: resolveSampleImageUrl(item.image_url, supabaseAdmin),
       price_cents: item.price_cents,
       prep_minutes: item.prep_minutes,
       is_available: true,
@@ -310,6 +327,30 @@ export async function completeOnboardingAction() {
   await setFlashToast({
     type: "success",
     message: "Setup complete. Your family workspace is ready.",
+  });
+
+  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/onboarding");
+
+  redirect("/");
+}
+
+export async function skipOnboardingAction() {
+  const { supabase, profile } = await requireAdmin();
+
+  const { error } = await supabase
+    .from("tenant_settings")
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq("tenant_id", profile.tenant_id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await setFlashToast({
+    type: "success",
+    message: "Setup skipped. You can still manage everything from the dashboard anytime.",
   });
 
   revalidatePath("/", "layout");

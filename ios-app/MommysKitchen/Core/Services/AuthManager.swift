@@ -11,6 +11,7 @@ final class AuthManager: ObservableObject {
 
     @Published private(set) var state: State = .loading
     @Published private(set) var profile: Profile?
+    @Published private(set) var familyName: String?
     @Published var errorMessage: String?
     @Published var accountDeletionMessage: String?
 
@@ -98,6 +99,7 @@ final class AuthManager: ObservableObject {
                 await handleSession(normalizedSession.user)
             } else {
                 profile = nil
+                familyName = nil
                 state = .signedOut
                 errorMessage = "Check your email to confirm your account before signing in."
             }
@@ -110,6 +112,7 @@ final class AuthManager: ObservableObject {
         do {
             try await supabase.client.auth.signOut()
             profile = nil
+            familyName = nil
             state = .signedOut
             accountDeletionMessage = nil
         } catch {
@@ -134,6 +137,7 @@ final class AuthManager: ObservableObject {
             }
 
             profile = nil
+            familyName = nil
             state = .signedOut
             accountDeletionMessage = nil
         } catch {
@@ -149,6 +153,7 @@ final class AuthManager: ObservableObject {
     private func handleSession(_ user: User?) async {
         guard let user else {
             profile = nil
+            familyName = nil
             state = .signedOut
             return
         }
@@ -156,15 +161,18 @@ final class AuthManager: ObservableObject {
         state = .signedIn(user)
         do {
             let fetchedProfile = try await profileRepository.fetchCurrentProfile(userID: user.id)
+            let fetchedFamilyName = try await profileRepository.fetchTenantName(userID: user.id)
             await appSettingsStore.refresh()
             if let requiredRole, fetchedProfile.role != requiredRole {
                 profile = nil
+                familyName = nil
                 state = .signedOut
                 errorMessage = roleMismatchMessage ?? "This account doesn’t have access to this app."
                 try? await supabase.client.auth.signOut()
                 return
             }
             profile = fetchedProfile
+            familyName = fetchedFamilyName
         } catch {
             errorMessage = error.localizedDescription
         }

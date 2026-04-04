@@ -9,7 +9,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { getOnboardingSnapshot } from "@/lib/data/onboarding";
 import { getAppSettings } from "@/lib/data/app-settings";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { completeOnboardingAction, seedSampleMenuAction } from "@/lib/actions/onboarding";
+import { completeOnboardingAction, seedSampleMenuAction, skipOnboardingAction } from "@/lib/actions/onboarding";
 import type { Profile } from "@/lib/types/app";
 
 const stepMeta = [
@@ -53,8 +53,13 @@ export default async function OnboardingPage({
 
   return (
     <div className="space-y-5">
-      <section>
+      <section className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Family setup</h1>
+        <form action={skipOnboardingAction}>
+          <Button type="submit" variant="outline" size="lg">
+            Skip setup
+          </Button>
+        </form>
       </section>
 
       <Card size="sm" className="border-border/70 bg-card shadow-sm">
@@ -72,18 +77,19 @@ export default async function OnboardingPage({
 
               return (
                 <div key={entry.value} className="flex items-center gap-2">
-                  <div
+                  <Link
+                    href={`/onboarding?step=${entry.value}`}
                     className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${
                       active
                         ? "border-transparent bg-[#DD7947]"
                         : complete
                           ? "border-emerald-200 bg-emerald-50/50"
                           : "border-border/70 bg-background"
-                    }`}
+                    } transition-colors hover:bg-muted/40`}
                   >
                     <Icon className={`size-4 ${active ? "text-white" : complete ? "text-emerald-600" : "text-muted-foreground"}`} />
                     <span className={`text-sm font-medium ${active ? "text-white" : "text-foreground"}`}>{entry.label}</span>
-                  </div>
+                  </Link>
                   {entry.value < stepMeta.length ? <ChevronRight className="size-4 text-muted-foreground" /> : null}
                 </div>
               );
@@ -108,9 +114,6 @@ export default async function OnboardingPage({
               <ChecklistItem number={4} label="Place one test order to verify the full flow." />
             </div>
             <div className="flex flex-wrap justify-end gap-2 border-t border-border/70 pt-4">
-              <Button render={<Link href="/" />} nativeButton={false} variant="outline" size="lg">
-                Skip for now
-              </Button>
               <Button render={<Link href="/onboarding?step=2" />} nativeButton={false} variant="outline" size="lg">
                 Start setup
                 <ArrowRight data-icon="inline-end" />

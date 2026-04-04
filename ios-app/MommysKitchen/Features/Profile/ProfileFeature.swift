@@ -13,6 +13,7 @@ struct ProfileView: View {
                         LabeledContent("Name", value: profile.fullName ?? "Not set")
                         LabeledContent("Email", value: authManager.currentUser?.email ?? "Not set")
                         LabeledContent("Phone", value: profile.phone ?? "Not set")
+                        LabeledContent("Family", value: authManager.familyName ?? "Not set")
                         LabeledContent("Role", value: profile.role.rawValue.capitalized)
                     }
                 }

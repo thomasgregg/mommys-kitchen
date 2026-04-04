@@ -48,6 +48,7 @@ targets:
       configs:
         Debug:
           APS_ENVIRONMENT: development
+          ENABLE_DEBUG_DYLIB: NO
         Release:
           APS_ENVIRONMENT: production
     dependencies:

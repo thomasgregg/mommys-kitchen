@@ -49,6 +49,7 @@ function isActivePath(pathname: string, href: string) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const isOnboarding = pathname === "/onboarding" || pathname.startsWith("/onboarding?");
 
   return (
     <SidebarRoot collapsible="icon" variant="sidebar" className="border-r border-sidebar-border/80">
@@ -61,38 +62,42 @@ export function Sidebar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 pb-3">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {links.map((link) => {
-                const active = isActivePath(pathname, link.href);
-                const Icon = link.icon;
+      {isOnboarding ? null : (
+        <>
+          <SidebarContent className="px-3 pb-3">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {links.map((link) => {
+                    const active = isActivePath(pathname, link.href);
+                    const Icon = link.icon;
 
-                return (
-                  <SidebarMenuItem key={link.href}>
-                    <SidebarMenuButton
-                      render={<Link href={link.href} />}
-                      tooltip={link.label}
-                      isActive={active}
-                      className={cn(
-                        "h-10 rounded-xl px-3 text-sm font-medium text-sidebar-foreground transition-all group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center",
-                        active
-                          ? "border border-slate-950 bg-background text-foreground shadow-none hover:bg-slate-100 data-active:border-slate-950 data-active:bg-background data-active:text-foreground data-active:shadow-none data-active:hover:bg-slate-100"
-                          : "hover:bg-slate-100"
-                      )}
-                    >
-                      <Icon />
-                      <span>{link.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarRail />
+                    return (
+                      <SidebarMenuItem key={link.href}>
+                        <SidebarMenuButton
+                          render={<Link href={link.href} />}
+                          tooltip={link.label}
+                          isActive={active}
+                          className={cn(
+                            "h-10 rounded-xl px-3 text-sm font-medium text-sidebar-foreground transition-all group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center",
+                            active
+                              ? "border border-slate-950 bg-background text-foreground shadow-none hover:bg-slate-100 data-active:border-slate-950 data-active:bg-background data-active:text-foreground data-active:shadow-none data-active:hover:bg-slate-100"
+                              : "hover:bg-slate-100"
+                          )}
+                        >
+                          <Icon />
+                          <span>{link.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarRail />
+        </>
+      )}
     </SidebarRoot>
   );
 }
